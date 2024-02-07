@@ -1,2 +1,8 @@
-.env
+# logging
 log.txt
+
+# environments
+.env
+.venv
+env/
+venv/

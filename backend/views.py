@@ -13,7 +13,7 @@ def register(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            check_registration(data=data)
+            check_registration(data)
             user = User.objects.create(
                 username = data.get('username'),
                 password = make_password(data.get('password')),
@@ -32,7 +32,7 @@ def register(request):
             return JsonResponse({}, status=404)
 
     else:
-        return JsonResponse({}, status=400)
+        return JsonResponse({}, status=400) # invalid request method
 
 @csrf_exempt
 def login(request):
@@ -41,7 +41,7 @@ def login(request):
             data = json.loads(request.body)
             username = data.get("username")
             password = data.get("password")
-            check_login(username=username, password=password)
+            check_login(username, password)
             return JsonResponse({}, status=200) # login successful
 
         except ValidationError as e:
@@ -53,4 +53,4 @@ def login(request):
             return JsonResponse({}, status=404)
         
     else:
-        return JsonResponse({}, status=400)
+        return JsonResponse({}, status=400) # invalid request method
