@@ -1,12 +1,13 @@
+import uuid
 from django.db import models
 
 class User(models.Model):
-    id = models.AutoField(primary_key=True, editable=False)
-    username = models.CharField(max_length=100, blank=False, null=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    username = models.CharField(max_length=100, blank=False, null=False, unique=True)
     password = models.CharField(max_length=100, blank=False, null=False)
     unit = models.CharField(max_length=10, choices=[('metric', 'Metric'), ('imperial', 'Imperial')], blank=False, null=False)
     experience = models.CharField(max_length=20, choices=[('beginner', 'Beginner'), ('intermediate', 'Intermediate'), ('expert', 'Expert')])
-    email = models.EmailField(blank=False, null=False)
+    email = models.EmailField(blank=False, null=False, unique=True)
 
 class Tracking(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
