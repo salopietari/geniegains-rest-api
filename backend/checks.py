@@ -30,7 +30,7 @@ def check_registration(data):
     except ValidationError as e:
         raise ValidationError(e)
     
-    except Exception as e:
+    except Exception as e: 
         raise Exception(e)
     
 @csrf_exempt

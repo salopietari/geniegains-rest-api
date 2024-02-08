@@ -14,11 +14,15 @@ def register(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            form = UserForm(data)
-            if form.is_valid():
-                form.save()
-                return JsonResponse({}, status=200) # registration successful
-            return JsonResponse({"error": form.errors}, status=400) # form is invalid
+            check_registration(data)
+            User.objects.create(
+                username=data.get("username"),
+                password=make_password(data.get("password")),
+                unit=data.get("unit"),
+                experience=data.get("experience"),
+                email=data.get("email")
+            )
+            return JsonResponse({}, status=200)
         
         except PasswordTooShortError as e:
             logger.error(str(e))
