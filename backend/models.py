@@ -1,10 +1,17 @@
 import uuid
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.validators import ASCIIUsernameValidator
+from django.core.validators import MinLengthValidator
+from django.core.validators import RegexValidator
+
+class AlphanumericUsernameValidator(RegexValidator):
+    regex = r'^[a-zA-Z0-9]+$'
+    message = 'Username must contain only letters and numbers.'
 
 class User(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    username = models.CharField(max_length=100, blank=False, null=False, unique=True)
+    username = models.CharField(max_length=100, blank=False, null=False, unique=True, validators=[AlphanumericUsernameValidator()])
     password = models.CharField(max_length=100, blank=False, null=False)
     unit = models.CharField(max_length=10, choices=[('metric', 'Metric'), ('imperial', 'Imperial')], blank=False, null=False)
     experience = models.CharField(max_length=20, choices=[('beginner', 'Beginner'), ('intermediate', 'Intermediate'), ('expert', 'Expert')])

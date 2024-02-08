@@ -9,30 +9,23 @@ from django.contrib.auth.hashers import check_password
 @csrf_exempt
 def check_registration(data):
     try:
-        username = data.get('username')
-        password = data.get('password')
-        unit = data.get('unit')
-        experience = data.get('experience')
-        email = data.get('email')
-
-        # empty
-        if not username:
-            raise ValidationError("Username is required")
-        if not password:
-            raise ValidationError("Password is required")
-        if not unit:
-            raise ValidationError("Unit is required")
-        if not experience:
-            raise ValidationError("Experience is required")
-        if not email:
-            raise ValidationError("Email is required")
+        required_fields = ['username', 'password', 'unit', 'experience', 'email']
+        for field in required_fields:
+            if not data.get(field): # check that no required field is empty
+                raise ValidationError(f"{field} is required")
+            
+        if len(data['password']) < 8:
+            raise PasswordTooShortError("Password must be at least 8 characters long")
         
         # already exists
-        if User.objects.filter(username=username).exists():
+        if User.objects.filter(username=data.get("username")).exists():
             raise ValidationError("Username already exists")
 
-        if User.objects.filter(email=email).exists():
+        if User.objects.filter(email=data.get("email")).exists():
             raise ValidationError("Email already exists")
+        
+    except PasswordTooShortError as e:
+        raise PasswordTooShortError(e)
         
     except ValidationError as e:
         raise ValidationError(e)
@@ -54,9 +47,12 @@ def check_login(data):
         
         user = User.objects.get(username=username)
 
-        # if the username or password are incorrect raise ValidationError
+        # if the user was not found in the db or password is incorrect raise ValidationError
         if user is None or not check_password(password, user.password):
             raise ValidationError("Invalid username and or password")
+        
+    except ObjectDoesNotExist as e:
+        raise ObjectDoesNotExist(e)
         
     except ValidationError as e:
         raise ValidationError(e)

@@ -7,22 +7,22 @@ from backend.models import *
 from backend.checks import *
 from backend.exceptions import *
 from backend.loghandler import *
+from backend.forms import *
 
 @csrf_exempt
 def register(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            check_registration(data)
-            # create user
-            user = User.objects.create(
-                username = data.get('username'),
-                password = make_password(data.get('password')),
-                unit = data.get('unit'),
-                experience = data.get('experience'),
-                email = data.get('email')
-            )
-            return JsonResponse({}, status=200) # registration successful
+            form = UserForm(data)
+            if form.is_valid():
+                form.save()
+                return JsonResponse({}, status=200) # registration successful
+            return JsonResponse({"error": form.errors}, status=400) # form is invalid
+        
+        except PasswordTooShortError as e:
+            logger.error(str(e))
+            return JsonResponse({"error": str(e)}, status=404)
 
         except ValidationError as e:
             logger.error(str(e))
@@ -42,6 +42,10 @@ def login(request):
             data = json.loads(request.body)
             check_login(data)
             return JsonResponse({}, status=200) # login successful
+        
+        except ObjectDoesNotExist as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
 
         except ValidationError as e:
             logger.error(str(e))
