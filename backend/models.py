@@ -1,5 +1,6 @@
 import uuid
 from django.db import models
+from django.utils import timezone
 
 class User(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -12,7 +13,9 @@ class User(models.Model):
 class Tracking(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
     name = models.CharField(max_length=100, blank=False, null=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, to_field="id")
+    created = models.DateTimeField(default=timezone.now, editable=False)
+    updated = models.DateTimeField(default=timezone.now)
 
 class Addition(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
@@ -29,6 +32,7 @@ class Movement(models.Model):
 
 class Exercise(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, to_field="id")
     name = models.CharField(max_length=100)
     date = models.DateField(auto_now_add=True)
     note = models.TextField(blank=True)
@@ -50,6 +54,7 @@ class TrainingPlan(models.Model):
 
 class Goal(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, to_field="id")
     name = models.CharField(max_length=100)
     number = models.DecimalField(max_digits=10, decimal_places=2)
     date = models.DateField()
