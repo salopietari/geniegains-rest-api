@@ -7,7 +7,6 @@ from backend.models import *
 from backend.checks import *
 from backend.exceptions import *
 from backend.loghandler import *
-from backend.forms import *
 
 @csrf_exempt
 def register(request):
