@@ -11,7 +11,7 @@ class AlphanumericUsernameValidator(RegexValidator):
 
 class User(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    token = models.UUIDField(unique=True)
+    token = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
     username = models.CharField(max_length=100, blank=False, null=False, unique=True, validators=[AlphanumericUsernameValidator()])
     password = models.CharField(max_length=100, blank=False, null=False)
     unit = models.CharField(max_length=10, choices=[('metric', 'Metric'), ('imperial', 'Imperial')], blank=False, null=False)

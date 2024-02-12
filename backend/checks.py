@@ -14,8 +14,8 @@ def check_registration(data):
             if not data.get(field): # check that no required field is empty
                 raise ValidationError(f"{field} is required")
             
-        if len(data['password']) < 8:
-            raise PasswordTooShortError("Password must be at least 8 characters long")
+        if len(data['password']) < 5:
+            raise PasswordTooShortError("Password must be at least 5 characters long")
         
         # already exists
         if User.objects.filter(username=data.get("username")).exists():

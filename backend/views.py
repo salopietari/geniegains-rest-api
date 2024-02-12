@@ -36,6 +36,7 @@ def register(request):
             return JsonResponse({}, status=404)
 
     else:
+        logger.error("Invalid request method")
         return JsonResponse({}, status=400) # invalid request method
 
 @csrf_exempt
