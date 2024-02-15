@@ -13,7 +13,6 @@ def register(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            print("data: " + str(data))
             check_registration(data)
             User.objects.create(
                 username=data.get("username"),
