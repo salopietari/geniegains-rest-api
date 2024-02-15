@@ -9,13 +9,16 @@ from django.contrib.auth.hashers import check_password
 @csrf_exempt
 def check_registration(data):
     try:
-        required_fields = ['username', 'password', 'unit', 'experience', 'email']
+        required_fields = ['username', 'password', 'confirmPassword', 'unit', 'experience', 'email']
         for field in required_fields:
             if not data.get(field): # check that no required field is empty
                 raise ValidationError(f"{field} is required")
             
         if len(data['password']) < 5:
             raise PasswordTooShortError("Password must be at least 5 characters long")
+        
+        if (data['password'] != data['confirmPassword']):
+            raise PasswordsDoNotMatchError("Passwords do not match")
         
         # already exists
         if User.objects.filter(username=data.get("username")).exists():
@@ -26,6 +29,9 @@ def check_registration(data):
         
     except PasswordTooShortError as e:
         raise PasswordTooShortError(e)
+    
+    except PasswordsDoNotMatchError as e:
+        raise PasswordsDoNotMatchError(e)
         
     except ValidationError as e:
         raise ValidationError(e)

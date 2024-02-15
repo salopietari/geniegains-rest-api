@@ -13,6 +13,7 @@ def register(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            print("data: " + str(data))
             check_registration(data)
             User.objects.create(
                 username=data.get("username"),
@@ -24,6 +25,10 @@ def register(request):
             return JsonResponse({}, status=200)
         
         except PasswordTooShortError as e:
+            logger.error(str(e))
+            return JsonResponse({"error": str(e)}, status=404)
+        
+        except PasswordsDoNotMatchError as e:
             logger.error(str(e))
             return JsonResponse({"error": str(e)}, status=404)
 
