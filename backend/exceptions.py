@@ -3,3 +3,6 @@ class PasswordTooShortError(Exception):
 
 class PasswordsDoNotMatchError(Exception):
     pass
+
+class TokenError(Exception):
+    pass

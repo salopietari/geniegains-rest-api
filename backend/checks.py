@@ -39,9 +39,32 @@ def check_registration(data):
     except Exception as e: 
         raise Exception(e)
     
+# token is saved locally on a user's system, this token authenticates user
+# used for example in: automatic logging in
 @csrf_exempt
-def check_login(data):
+def check_token(token):
     try:
+        # check if token is empty
+        if token == "":
+            raise TokenError("Token is empty")
+    
+        # check if token corresponds to any user
+        user = User.objects.get(token=token)
+        
+    except TokenError as e:
+        raise TokenError(e)
+
+    except User.DoesNotExist as e:
+        raise User.DoesNotExist(e)
+    
+    except Exception as e:
+        raise Exception(f"check_token(token) failed: {e}")
+    
+# used when user is logging in
+@csrf_exempt
+def check_login(data, token):
+    try:
+        user = User.objects.get(token=token)
         username = data.get("username")
         password = data.get("password")
 
@@ -51,11 +74,21 @@ def check_login(data):
         if not password:
             raise ValidationError("Password is required")
         
-        user = User.objects.get(username=username)
+        # check that the token matching username is the same as in the given data
+        if str(username) != str(user.username):
+            logger.error(f"token: {token if 'token' in locals() else 'Not Available'}")
+            logger.error(f"username: {username if 'username' in locals() else 'Not Available'}")
+            raise ValidationError("Token doesn't match the username that was given in data")
 
         # if the user was not found in the db or password is incorrect raise ValidationError
         if user is None or not check_password(password, user.password):
-            raise ValidationError("Invalid username and or password")
+            raise ValidationError("Invalid username and or password")  
+    
+    except TokenError as e:
+        raise TokenError(e)
+    
+    except User.DoesNotExist as e:
+        raise User.DoesNotExist(e)
         
     except ObjectDoesNotExist as e:
         raise ObjectDoesNotExist(e)

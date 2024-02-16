@@ -48,8 +48,17 @@ def login(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            check_login(data)
+            token = request.META.get('HTTP_AUTH_TOKEN')
+            check_login(data, token)
             return JsonResponse({}, status=200) # login successful
+        
+        except TokenError as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except User.DoesNotExist as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
         
         except ObjectDoesNotExist as e:
             logger.error(str(e))
@@ -71,6 +80,8 @@ def tracking(request):
     # create tracking
     if request.method == 'POST':
         try:
+            token = request.META.get('HTTP_AUTH_TOKEN')
+            check_token(token)
             data = json.loads(request.body)
             tracking_name = data.get("tracking_name")
             user_id = data.get("user_id")
@@ -82,6 +93,10 @@ def tracking(request):
                 user = user
             )
             return JsonResponse({}, status=200) # created tracking successfully
+        
+        except TokenError as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
 
         except ObjectDoesNotExist as e:
             logger.error(str(e))
