@@ -77,6 +77,39 @@ def login(request):
     
 @csrf_exempt
 def tracking(request):
+
+    # get all trackings for a user
+    if request.method == 'GET':
+        try:
+            token = request.META.get('HTTP_AUTH_TOKEN')
+            check_token(token)
+            user = User.objects.get(token=token)
+
+            trackings = Tracking.objects.filter(user=user)
+            tracking_list = [
+                {"id": str(tracking.id), "name": tracking.name, "updated": tracking.updated}
+                for tracking in trackings
+            ]
+
+            return JsonResponse({"tracking_list": tracking_list}, status=200)
+        
+        except TokenError as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+
+        except ObjectDoesNotExist as e:
+            logger.error(str(e))
+            logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
+            return JsonResponse({}, status=404)
+
+        except ValidationError as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+
+        except Exception as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+
     # create tracking
     if request.method == 'POST':
         try:
@@ -85,8 +118,8 @@ def tracking(request):
             data = json.loads(request.body)
             tracking_name = data.get("tracking_name")
             user_id = data.get("user_id")
-            check_add_tracking(tracking_name, user_id)
-            user = User.objects.get(id=user_id)
+            check_add_tracking(tracking_name)
+            user = User.objects.get(token=token)
             # create tracking
             tracking = Tracking.objects.create(
                 name = tracking_name,

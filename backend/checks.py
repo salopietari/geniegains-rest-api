@@ -39,18 +39,17 @@ def check_registration(data):
     except Exception as e: 
         raise Exception(e)
     
-# token is saved locally on a user's system, this token authenticates user
-# used for example in: automatic logging in
+# token is saved locally on a user's system, this token authenticates user nhy
 @csrf_exempt
 def check_token(token):
     try:
         # check if token is empty
         if token == "":
             raise TokenError("Token is empty")
-    
+
         # check if token corresponds to any user
         user = User.objects.get(token=token)
-        
+
     except TokenError as e:
         raise TokenError(e)
 
@@ -100,22 +99,16 @@ def check_login(data, token):
         raise Exception(e) 
     
 @csrf_exempt
-def check_add_tracking(tracking_name, user_id):
+def check_add_tracking(tracking_name):
     try:
 
         # check if empty
         if not tracking_name:
             raise ValidationError("Tracking_name is required")
-        if not user_id:
-            raise ValidationError("User_id is required")
             
         # check max length
-        if len(tracking_name) > 100:
+        if len(tracking_name) > Tracking._meta.get_field('name').max_length:
             raise ValidationError(f"Tracking_name exceeds maximum length of: {Tracking._meta.get_field('name').max_length}")
-
-        # check if user_id is in db
-        if not User.objects.filter(id=user_id).exists():
-            raise ObjectDoesNotExist("User_id not found in database")
         
     except ObjectDoesNotExist as e:
         raise ObjectDoesNotExist(e)
