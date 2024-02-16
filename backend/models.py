@@ -23,26 +23,30 @@ class Tracking(models.Model):
     name = models.CharField(max_length=100, blank=False, null=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, to_field="id")
     created = models.DateTimeField(default=timezone.now, editable=False)
-    updated = models.DateTimeField(default=timezone.now)
+    updated = models.DateTimeField(default=timezone.now, editable=True)
 
 class Addition(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
-    tracking = models.ForeignKey(Tracking, on_delete=models.CASCADE)
-    date = models.DateField(auto_now_add=True)
-    number = models.DecimalField(max_digits=10, decimal_places=2)
+    tracking = models.ForeignKey(Tracking, on_delete=models.CASCADE, null=True)
+    created = models.DateField(default=timezone.now, editable=False)
+    updated = models.DateField(default=timezone.now, editable=True)
+    number = models.DecimalField(max_digits=10, decimal_places=2) # mikä tää on?
     unit = models.CharField(max_length=10)
     note = models.TextField(blank=True)
+
+#class Type / Category ? pitäskö tehä sillekki oma (push, pull, legs, upper, lower etc.)
 
 class Movement(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
     name = models.CharField(max_length=100)
-    category = models.CharField(max_length=100)
+    category = models.CharField(max_length=100) # jos tähän tulee dropdown menu tarttee category:lle oman taulun?
 
 class Exercise(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, to_field="id")
     name = models.CharField(max_length=100)
-    date = models.DateField(auto_now_add=True)
+    created = models.DateField(default=timezone.now, editable=False)
+    updated = models.DateField(default=timezone.now, editable=True)
     note = models.TextField(blank=True)
     type = models.CharField(max_length=100, blank=True)
     movement = models.ManyToManyField(Movement, through='ExerciseMovementConnection')
@@ -50,6 +54,8 @@ class Exercise(models.Model):
 class ExerciseMovementConnection(models.Model):
     exercise = models.ForeignKey(Exercise, on_delete=models.CASCADE)
     movement = models.ForeignKey(Movement, on_delete=models.CASCADE)
+    created = models.DateField(default=timezone.now, editable=False)
+    updated = models.DateField(default=timezone.now, editable=True)
     sets = models.IntegerField()
     reps = models.IntegerField()
     weight = models.DecimalField(max_digits=10, decimal_places=2)
@@ -65,5 +71,6 @@ class Goal(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, to_field="id")
     name = models.CharField(max_length=100)
     number = models.DecimalField(max_digits=10, decimal_places=2)
-    date = models.DateField()
+    created = models.DateField(default=timezone.now, editable=False)
+    updated = models.DateField(default=timezone.now, editable=True)
     unit = models.CharField(max_length=10, choices=[('metric', 'Metric'), ('imperial', 'Imperial')])
