@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from backend.loghandler import *
 from django.contrib.auth.hashers import check_password
 
+# used in registration
 @csrf_exempt
 def check_registration(data):
     try:
@@ -39,7 +40,7 @@ def check_registration(data):
     except Exception as e: 
         raise Exception(e)
     
-# token is saved locally on a user's system, this token authenticates user nhy
+# used in authenticating the user
 @csrf_exempt
 def check_token(token):
     try:
@@ -98,6 +99,7 @@ def check_login(data, token):
     except Exception as e:
         raise Exception(e) 
     
+# used when creating a tracking
 @csrf_exempt
 def check_add_tracking(tracking_name):
     try:
@@ -116,5 +118,23 @@ def check_add_tracking(tracking_name):
     except ValidationError as e:
         raise ValidationError(e)
     
+    except Exception as e:
+        raise Exception(e)
+    
+# check that the user trying to access tracking actually is the owner
+@csrf_exempt
+def check_user_tracking(user, tracking_id):
+    try:
+        tracking = Tracking.objects.get(id=tracking_id)
+
+        if tracking.user != user:
+            raise PermissionError("User is not allowed to access the tracking")
+
+    except PermissionError as e:
+        raise PermissionError(e)
+    
+    except Tracking.DoesNotExist as e:
+        raise Tracking.DoesNotExist(e)
+
     except Exception as e:
         raise Exception(e)

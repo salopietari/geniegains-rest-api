@@ -92,7 +92,7 @@ def tracking(request):
             ]
 
             return JsonResponse({"tracking_list": tracking_list}, status=200)
-        
+
         except TokenError as e:
             logger.error(str(e))
             return JsonResponse({}, status=404)
@@ -115,11 +115,12 @@ def tracking(request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
+
             data = json.loads(request.body)
             tracking_name = data.get("tracking_name")
-            user_id = data.get("user_id")
             check_add_tracking(tracking_name)
             user = User.objects.get(token=token)
+            
             # create tracking
             tracking = Tracking.objects.create(
                 name = tracking_name,
@@ -146,3 +147,84 @@ def tracking(request):
 
     else:
         return JsonResponse({}, status=400) # invalid request method
+    
+@csrf_exempt
+def tracking_id(request, id):
+
+    # get every addition related to one tracking (?)
+    if request.method == 'GET':
+        pass
+    # add an addition to tracking (?)
+    if request.method == 'POST':
+        pass
+    # delete tracking by id
+    if request.method == 'DELETE':
+        try:
+            token = request.META.get('HTTP_AUTH_TOKEN')
+            check_token(token)
+            user = User.objects.get(token=token)
+            check_user_tracking(user, id)
+
+            # get & delete tracking
+            tracking_to_be_deleted = Tracking.objects.get(id=id)
+            tracking_to_be_deleted.delete()
+
+            return JsonResponse({}, status=200) # tracking deleted successfully
+
+        except PermissionError as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except Tracking.DoesNotExist as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+            
+        except TokenError as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except User.DoesNotExist as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+
+        except Exception as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+    else:
+        return JsonResponse({}, status=404) # invalid request method
+    
+@csrf_exempt
+def addition(request):
+
+    # create addition
+    if request.method == 'POST':
+        token = request.META.get('HTTP_AUTH_TOKEN')
+        check_token(token)
+        data = json.loads(request.body)
+
+        # get json data
+        tracking_id = data.get('tracking_id')
+        number = data.get('number')
+        unit = data.get('unit')
+        note = data.get('note')
+
+        if tracking_id:
+            tracking = Tracking.objects.get(id=tracking_id)
+        else:
+            tracking = None
+
+        # create addition
+        addition = Addition.objects.create(
+            tracking=tracking,
+            number=number,
+            unit=unit,
+            note=note,
+            created=timezone.now(),
+            updated=timezone.now()
+        )
+
+        return JsonResponse({}, status=200) # addition created successfully
+
+
+    else:
+        return JsonResponse({}, status=404) # invalid request method

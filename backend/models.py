@@ -30,7 +30,7 @@ class Addition(models.Model):
     tracking = models.ForeignKey(Tracking, on_delete=models.CASCADE, null=True)
     created = models.DateField(default=timezone.now, editable=False)
     updated = models.DateField(default=timezone.now, editable=True)
-    number = models.DecimalField(max_digits=10, decimal_places=2) # mikä tää on?
+    number = models.DecimalField(max_digits=10, decimal_places=2)
     unit = models.CharField(max_length=10)
     note = models.TextField(blank=True)
 
