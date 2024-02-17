@@ -87,6 +87,8 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
 ]
 
+CORS_ALLOW_ALL_ORIGINS = True
+
 CORS_ALLOWED_ORIGINS = [
     'https://93s1sty-anonymous-8081.exp.direct',
     'https://w31qlui-anonymous-8081.exp.direct'
