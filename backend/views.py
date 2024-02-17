@@ -444,10 +444,6 @@ def user(request):
         except User.DoesNotExist as e:
             logger.error(str(e))
             return JsonResponse({}, status=404)
-        
-        except PermissionError as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
 
         except Exception as e:
             logger.error(str(e))
