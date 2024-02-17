@@ -99,45 +99,28 @@ def check_login(data, token):
     except Exception as e:
         raise Exception(e) 
     
-# used when creating a tracking
-@csrf_exempt
-def check_tracking_name(tracking_name):
+# used to check field lengths
+# example usage:
+# check_field_length('name', tracking_name, Tracking)
+def check_field_length(field_name, field_value, model_class):
     try:
-
-        # check if empty
-        if not tracking_name:
-            raise ValidationError("Tracking_name is required")
-            
-        # check max length
-        if len(tracking_name) > Tracking._meta.get_field('name').max_length:
-            raise ValidationError(f"Tracking_name exceeds maximum length of: {Tracking._meta.get_field('name').max_length}")
+        # Check if field is empty
+        if not field_value:
+            raise ValidationError(f"{field_name} is required")
         
+        # Check max length
+        max_length = model_class._meta.get_field(field_name).max_length
+        if len(field_value) > max_length:
+            raise ValidationError(f"{field_name} exceeds maximum length of: {max_length}")
+    
+    except ValidationError as e:
+        raise ValidationError(e)
+
     except ObjectDoesNotExist as e:
         raise ObjectDoesNotExist(e)
-            
-    except ValidationError as e:
-        raise ValidationError(e)
-    
+        
     except Exception as e:
         raise Exception(e)
-    
-# check exercise name length etc.
-@csrf_exempt
-def check_exercise_name(exercise_name):
-    try:
-        # check if empty
-        if not exercise_name:
-            raise ValidationError("Tracking_name is required")
-            
-        # check max length
-        if len(exercise_name) > Exercise._meta.get_field('name').max_length:
-            raise ValidationError(f"Exercise_name exceeds maximum length of: {Exercise._meta.get_field('name').max_length}")
-    
-    except ValidationError as e:
-        raise ValidationError(e)
-
-    except Exception as e:
-        raise Exception(e)   
 
 # check that the user trying to access tracking actually is the owner
 @csrf_exempt
