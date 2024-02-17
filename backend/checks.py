@@ -168,6 +168,9 @@ def check_user_exercise(user, exercise_id):
         
     except PermissionError as e:
         raise PermissionError(e)
+    
+    except Exercise.DoesNotExist as e:
+        raise Exercise.DoesNotExist(e)
 
     except Exception as e:
         raise Exception(e)

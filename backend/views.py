@@ -351,6 +351,36 @@ def exercise_id(request, id):
         pass
     # delete exercise by id
     if request.method == 'DELETE':
-        pass
+        try:
+            token = request.META.get('HTTP_AUTH_TOKEN')
+            check_token(token)
+            user = User.objects.get(token=token)
+            check_user_exercise(user, id)
+
+            # get & delete exercise
+            exercise_to_be_deleted = Exercise.objects.get(id=id)
+            exercise_to_be_deleted.delete()
+
+        except PermissionError as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except Exercise.DoesNotExist as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+            
+        except TokenError as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except User.DoesNotExist as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+
+        except Exception as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+
+        return JsonResponse({}, status=200) # tracking deleted successfully
     else:
         return JsonResponse({}, status=404) # invalid request method
