@@ -118,7 +118,7 @@ def tracking(request):
 
             data = json.loads(request.body)
             tracking_name = data.get("tracking_name")
-            check_tracking_name(tracking_name)
+            check_field_length('name', tracking_name, Tracking)
             user = User.objects.get(token=token)
             
             # create tracking
@@ -281,7 +281,7 @@ def exercise(request):
             user = User.objects.get(token=token)
 
             data = json.loads(request.body)
-            check_exercise_name(data.get('name'))
+            check_field_length('name', data.get('name'), Exercise)
 
             # create exercise
             exercise = Exercise.objects.create(
@@ -382,5 +382,46 @@ def exercise_id(request, id):
             return JsonResponse({}, status=404)
 
         return JsonResponse({}, status=200) # tracking deleted successfully
+    
+    else:
+        return JsonResponse({}, status=404) # invalid request method
+    
+@csrf_exempt
+def goal(request):
+    # get all goals
+    if request.method == 'GET':
+        pass
+    # create goal
+    if request.method == 'POST':
+        token = request.META.get('HTTP_AUTH_TOKEN')
+        check_token(token)
+        user = User.objects.get(token=token)
+        data = json.loads(request.body)
+
+        goal = Goal.objects.create(
+            user=user,
+            name=data.get('name'),
+            number=data.get('number'),
+            end=data.get('end'),
+            unit=data.get('unit')
+        )
+
+        return JsonResponse({}, status=200) # goal created successfully
+
+    else:
+        return JsonResponse({}, status=404) # invalid request method
+    
+@csrf_exempt
+def goal_id(request, id):
+    # get details of a goal by id
+    if request.method == 'GET':
+        pass
+    # jotain
+    if request.method == 'POST':
+        pass
+    # delete goal by id
+    if request.method == 'DELETE':
+        pass
+
     else:
         return JsonResponse({}, status=404) # invalid request method

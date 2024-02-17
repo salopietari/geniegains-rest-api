@@ -74,4 +74,4 @@ class Goal(models.Model):
     created = models.DateField(default=timezone.now, editable=False)
     updated = models.DateField(default=timezone.now, editable=True)
     end = models.DateField(default=timezone.now, editable=True)
-    unit = models.CharField(max_length=10, choices=[('metric', 'Metric'), ('imperial', 'Imperial')])
+    unit = models.CharField(max_length=10)
