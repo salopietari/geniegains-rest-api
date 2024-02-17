@@ -89,9 +89,23 @@ MIDDLEWARE = [
 
 CORS_ALLOW_ALL_ORIGINS = True
 
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    'Auth-Token',
+]
+
 CORS_ALLOWED_ORIGINS = [
     'https://93s1sty-anonymous-8081.exp.direct',
-    'https://w31qlui-anonymous-8081.exp.direct'
+    'https://w31qlui-anonymous-8081.exp.direct',
+    'http://localhost:8000'
 ]
 
 ROOT_URLCONF = 'restapi.urls'
