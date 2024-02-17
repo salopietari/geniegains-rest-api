@@ -89,6 +89,7 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     'https://93s1sty-anonymous-8081.exp.direct',
+    'https://w31qlui-anonymous-8081.exp.direct'
 ]
 
 ROOT_URLCONF = 'restapi.urls'

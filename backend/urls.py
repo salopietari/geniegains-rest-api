@@ -6,5 +6,6 @@ urlpatterns = [
     path("login", views.login, name="login"),
     path("tracking", views.tracking, name="tracking"),
     path("tracking/<int:id>", views.tracking_id, name="tracking_id"),
-    path("addition", views.addition, name="addition")
+    path("addition", views.addition, name="addition"),
+    path("exercise", views.exercise, name="exercise")
 ]

@@ -73,4 +73,5 @@ class Goal(models.Model):
     number = models.DecimalField(max_digits=10, decimal_places=2)
     created = models.DateField(default=timezone.now, editable=False)
     updated = models.DateField(default=timezone.now, editable=True)
+    end = models.DateField(default=timezone.now, editable=True)
     unit = models.CharField(max_length=10, choices=[('metric', 'Metric'), ('imperial', 'Imperial')])

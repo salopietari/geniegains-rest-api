@@ -138,3 +138,21 @@ def check_user_tracking(user, tracking_id):
 
     except Exception as e:
         raise Exception(e)
+    
+# check exercise name length etc.
+@csrf_exempt
+def check_exercise_name(exercise_name):
+    try:
+        # check if empty
+        if not exercise_name:
+            raise ValidationError("Tracking_name is required")
+            
+        # check max length
+        if len(exercise_name) > Exercise._meta.get_field('name').max_length:
+            raise ValidationError(f"Exercise_name exceeds maximum length of: {Exercise._meta.get_field('name').max_length}")
+    
+    except ValidationError as e:
+        raise ValidationError(e)
+
+    except Exception as e:
+        raise Exception(e)

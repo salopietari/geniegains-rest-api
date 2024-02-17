@@ -198,33 +198,130 @@ def addition(request):
 
     # create addition
     if request.method == 'POST':
-        token = request.META.get('HTTP_AUTH_TOKEN')
-        check_token(token)
-        data = json.loads(request.body)
+        try:
+            token = request.META.get('HTTP_AUTH_TOKEN')
+            check_token(token)
+            data = json.loads(request.body)
 
-        # get json data
-        tracking_id = data.get('tracking_id')
-        number = data.get('number')
-        unit = data.get('unit')
-        note = data.get('note')
+            # get json data
+            tracking_id = data.get('tracking_id')
+            number = data.get('number')
+            unit = data.get('unit')
+            note = data.get('note')
 
-        if tracking_id:
-            tracking = Tracking.objects.get(id=tracking_id)
-        else:
-            tracking = None
+            # if tracking_id in json data is not null get the tracking object
+            # else tracking will be null
+            if tracking_id:
+                tracking = Tracking.objects.get(id=tracking_id)
+            else:
+                tracking = None
 
-        # create addition
-        addition = Addition.objects.create(
-            tracking=tracking,
-            number=number,
-            unit=unit,
-            note=note,
-            created=timezone.now(),
-            updated=timezone.now()
-        )
+            # create addition
+            addition = Addition.objects.create(
+                tracking=tracking,
+                number=number,
+                unit=unit,
+                note=note,
+                created=timezone.now(),
+                updated=timezone.now()
+            )
 
-        return JsonResponse({}, status=200) # addition created successfully
+            return JsonResponse({}, status=200) # addition created successfully
+            
+        except TokenError as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except User.DoesNotExist as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+
+        except Exception as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
 
 
+    else:
+        return JsonResponse({}, status=404) # invalid request method
+    
+@csrf_exempt
+def exercise(request):
+    # get all exercises
+    if request.method == 'GET':
+        try:
+            token = request.META.get('HTTP_AUTH_TOKEN')
+            check_token(token)
+
+            user = User.objects.get(token=token)
+            
+            exercises = Exercise.objects.filter(user=user)
+            exercise_list = [
+                {"id": str(exercise.id), "name": exercise.name, "updated": exercise.updated}
+                for exercise in exercises
+            ]
+
+            return JsonResponse({"exercise_list": exercise_list}, status=200)
+
+        except TokenError as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except User.DoesNotExist as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+
+        except Exception as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+    # create exercise
+    if request.method == 'POST':
+        try:
+            token = request.META.get('HTTP_AUTH_TOKEN')
+            check_token(token)
+            user = User.objects.get(token=token)
+
+            data = json.loads(request.body)
+            check_exercise_name(data.get('name'))
+
+            # create exercise
+            exercise = Exercise.objects.create(
+                user=user,
+                name=data.get('name'),
+                note=data.get('note'),
+                type=data.get('type')
+            )
+
+            return JsonResponse({}, status=200) # created exercise successfully
+         
+        except TokenError as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except User.DoesNotExist as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except ValidationError as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+
+        except Exception as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+
+    else:
+        return JsonResponse({}, status=404) # invalid request method
+    
+@csrf_exempt
+def exercise_id(request, id):
+    # get details of an exercise by id
+    if request.method == 'GET':
+        pass
+    # jotain
+    if request.method == 'POST':
+        pass
+    # delete exercise by id
+    if request.method == 'DELETE':
+        pass
     else:
         return JsonResponse({}, status=404) # invalid request method
