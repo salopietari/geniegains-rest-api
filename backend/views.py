@@ -118,7 +118,7 @@ def tracking(request):
 
             data = json.loads(request.body)
             tracking_name = data.get("tracking_name")
-            check_add_tracking(tracking_name)
+            check_tracking_name(tracking_name)
             user = User.objects.get(token=token)
             
             # create tracking
@@ -316,7 +316,36 @@ def exercise(request):
 def exercise_id(request, id):
     # get details of an exercise by id
     if request.method == 'GET':
-        pass
+        try:
+            token = request.META.get('HTTP_AUTH_TOKEN')
+            check_token(token)
+
+            user = User.objects.get(token=token)
+            check_user_exercise(user, id)
+
+            exercise = Exercise.objects.get(id=id)
+
+            return JsonResponse({"id": exercise.id,
+                                 "name": exercise.name,
+                                 "updated": exercise.updated
+                                 }, status=200) # got details of an exercise successfully
+        
+        except TokenError as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except User.DoesNotExist as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except PermissionError as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+
+        except Exception as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+
     # jotain
     if request.method == 'POST':
         pass

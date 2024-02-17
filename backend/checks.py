@@ -101,7 +101,7 @@ def check_login(data, token):
     
 # used when creating a tracking
 @csrf_exempt
-def check_add_tracking(tracking_name):
+def check_tracking_name(tracking_name):
     try:
 
         # check if empty
@@ -121,6 +121,24 @@ def check_add_tracking(tracking_name):
     except Exception as e:
         raise Exception(e)
     
+# check exercise name length etc.
+@csrf_exempt
+def check_exercise_name(exercise_name):
+    try:
+        # check if empty
+        if not exercise_name:
+            raise ValidationError("Tracking_name is required")
+            
+        # check max length
+        if len(exercise_name) > Exercise._meta.get_field('name').max_length:
+            raise ValidationError(f"Exercise_name exceeds maximum length of: {Exercise._meta.get_field('name').max_length}")
+    
+    except ValidationError as e:
+        raise ValidationError(e)
+
+    except Exception as e:
+        raise Exception(e)   
+
 # check that the user trying to access tracking actually is the owner
 @csrf_exempt
 def check_user_tracking(user, tracking_id):
@@ -139,20 +157,17 @@ def check_user_tracking(user, tracking_id):
     except Exception as e:
         raise Exception(e)
     
-# check exercise name length etc.
+# check that the user trying to access exercise actually is the owner
 @csrf_exempt
-def check_exercise_name(exercise_name):
+def check_user_exercise(user, exercise_id):
     try:
-        # check if empty
-        if not exercise_name:
-            raise ValidationError("Tracking_name is required")
-            
-        # check max length
-        if len(exercise_name) > Exercise._meta.get_field('name').max_length:
-            raise ValidationError(f"Exercise_name exceeds maximum length of: {Exercise._meta.get_field('name').max_length}")
-    
-    except ValidationError as e:
-        raise ValidationError(e)
+        exercise = Exercise.objects.get(id=exercise_id)
+
+        if exercise.user != user:
+            raise PermissionError("User is not allowed to access the exercise")
+        
+    except PermissionError as e:
+        raise PermissionError(e)
 
     except Exception as e:
         raise Exception(e)
