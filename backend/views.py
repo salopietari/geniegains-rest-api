@@ -111,7 +111,7 @@ def tracking(request):
             return JsonResponse({}, status=404)
 
     # create tracking
-    if request.method == 'POST':
+    elif request.method == 'POST':
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
@@ -155,10 +155,10 @@ def tracking_id(request, id):
     if request.method == 'GET':
         pass
     # add an addition to tracking (?)
-    if request.method == 'POST':
+    elif request.method == 'POST':
         pass
     # delete tracking by id
-    if request.method == 'DELETE':
+    elif request.method == 'DELETE':
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
@@ -274,7 +274,7 @@ def exercise(request):
             logger.error(str(e))
             return JsonResponse({}, status=404)
     # create exercise
-    if request.method == 'POST':
+    elif request.method == 'POST':
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
@@ -347,10 +347,10 @@ def exercise_id(request, id):
             return JsonResponse({}, status=404)
 
     # jotain
-    if request.method == 'POST':
+    elif request.method == 'POST':
         pass
     # delete exercise by id
-    if request.method == 'DELETE':
+    elif request.method == 'DELETE':
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
@@ -392,7 +392,7 @@ def goal(request):
     if request.method == 'GET':
         pass
     # create goal
-    if request.method == 'POST':
+    elif request.method == 'POST':
         token = request.META.get('HTTP_AUTH_TOKEN')
         check_token(token)
         user = User.objects.get(token=token)
@@ -417,10 +417,10 @@ def goal_id(request, id):
     if request.method == 'GET':
         pass
     # jotain
-    if request.method == 'POST':
+    elif request.method == 'POST':
         pass
     # delete goal by id
-    if request.method == 'DELETE':
+    elif request.method == 'DELETE':
         pass
 
     else:
@@ -452,10 +452,10 @@ def user(request):
 
 
     # update user details
-    if request.method == 'POST':
+    elif request.method == 'POST':
         pass
     # delete user
-    if request.method == 'DELETE':
+    elif request.method == 'DELETE':
         pass
 
     else:
