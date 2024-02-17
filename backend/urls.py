@@ -10,5 +10,7 @@ urlpatterns = [
     path("exercise", views.exercise, name="exercise"),
     path("exercise/<int:id>", views.exercise_id, name="exercise_id"),
     path("goal", views.goal, name="goal"),
-    path("goal/<int:id>", views.goal_id, name="goal_id")
+    path("goal/<int:id>", views.goal_id, name="goal_id"),
+    path("user", views.user, name="user")
+
 ]

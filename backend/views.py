@@ -425,3 +425,42 @@ def goal_id(request, id):
 
     else:
         return JsonResponse({}, status=404) # invalid request method
+    
+@csrf_exempt
+def user(request):
+    # get user details
+    if request.method == 'GET':
+        try:
+            token = request.META.get('HTTP_AUTH_TOKEN')
+            check_token(token)
+
+            user = User.objects.get(token=token)
+            return JsonResponse({"username": user.username, "email": user.email, "unit": user.unit, "experience": user.experience}, status=200)
+
+        except TokenError as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except User.DoesNotExist as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except PermissionError as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+
+        except Exception as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+
+
+    # update user details
+    if request.method == 'POST':
+        pass
+    # delete user
+    if request.method == 'DELETE':
+        pass
+
+    else:
+        return JsonResponse({}, status=404)
