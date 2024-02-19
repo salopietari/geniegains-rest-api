@@ -11,6 +11,6 @@ urlpatterns = [
     path("exercise/<int:id>", views.exercise_id, name="exercise_id"),
     path("goal", views.goal, name="goal"),
     path("goal/<int:id>", views.goal_id, name="goal_id"),
-    path("user", views.user, name="user")
-
+    path("user", views.user, name="user"),
+    path("movement", views.movement, name="movement")
 ]

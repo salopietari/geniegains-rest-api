@@ -102,6 +102,9 @@ def check_login(data, token):
 # used to check field lengths
 # example usage:
 # check_field_length('name', tracking_name, Tracking)
+# 1. Tracking class' field name: 'name'
+# 2. Variable name: 'tracking_name'
+# 3. Models.py class: 'Tracking'
 def check_field_length(field_name, field_value, model_class):
     try:
         # Check if field is empty

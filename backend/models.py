@@ -27,6 +27,7 @@ class Tracking(models.Model):
 
 class Addition(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, to_field="id")
     tracking = models.ForeignKey(Tracking, on_delete=models.CASCADE, null=True)
     created = models.DateField(default=timezone.now, editable=False)
     updated = models.DateField(default=timezone.now, editable=True)
@@ -38,8 +39,8 @@ class Addition(models.Model):
 
 class Movement(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, to_field="id")
     name = models.CharField(max_length=100)
-    category = models.CharField(max_length=100) # jos tähän tulee dropdown menu tarttee category:lle oman taulun?
 
 class Exercise(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
@@ -52,6 +53,8 @@ class Exercise(models.Model):
     movement = models.ManyToManyField(Movement, through='ExerciseMovementConnection')
 
 class ExerciseMovementConnection(models.Model):
+    id = models.AutoField(primary_key=True, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, to_field="id")
     exercise = models.ForeignKey(Exercise, on_delete=models.CASCADE)
     movement = models.ForeignKey(Movement, on_delete=models.CASCADE)
     created = models.DateField(default=timezone.now, editable=False)
@@ -64,6 +67,7 @@ class ExerciseMovementConnection(models.Model):
 
 class TrainingPlan(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, to_field="id")
     movements = models.ManyToManyField(Movement)
 
 class Goal(models.Model):

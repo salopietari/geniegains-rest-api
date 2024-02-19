@@ -350,7 +350,7 @@ def exercise_id(request, id):
 
             exercise = Exercise.objects.get(id=id)
 
-            # tähän pitää 
+            # tätä pitää muokata, täytyy sisältää ne movementexerciseconnection id:t
             return JsonResponse({"id": exercise.id,
                                  "name": exercise.name,
                                  "updated": exercise.updated
@@ -452,7 +452,50 @@ def goal_id(request, id):
         pass
 
     else:
+        logger.debug(f"invalid request method: {request.method}")
         return JsonResponse({}, status=404) # invalid request method
+    
+@csrf_exempt
+def movement(request):
+    # get all movement(s) ONKS TÄÄ TURHA
+    if request.method == 'GET':
+        pass
+    # create movement
+    elif request.method == 'POST':
+        try:
+            token = request.META.get('HTTP_AUTH_TOKEN')
+            check_token(token)
+
+            data = json.loads(request.body)
+            movement_name = data.get("name")
+            check_field_length('name', movement_name, Movement)
+
+            movement = Movement.objects.create(
+                name=movement_name
+            )
+
+            return JsonResponse({}, status=200) # movement created successfully
+
+        except TokenError as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except User.DoesNotExist as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+
+        except ValidationError as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except Exception as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+
+    else:
+        logger.debug(f"invalid request method: {request.method}")
+        return JsonResponse({}, status=404) # invalid request method
+
     
 @csrf_exempt
 def user(request):
