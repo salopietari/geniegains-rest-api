@@ -40,7 +40,7 @@ def register(request):
             return JsonResponse({}, status=404)
 
     else:
-        logger.error("Invalid request method")
+        logger.debug(f"invalid request method: {request.method}")
         return JsonResponse({}, status=400) # invalid request method
 
 @csrf_exempt
@@ -59,10 +59,6 @@ def login(request):
         except User.DoesNotExist as e:
             logger.error(str(e))
             return JsonResponse({}, status=404)
-        
-        except ObjectDoesNotExist as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
 
         except ValidationError as e:
             logger.error(str(e))
@@ -73,6 +69,31 @@ def login(request):
             return JsonResponse({}, status=404)
         
     else:
+        logger.debug(f"invalid request method: {request.method}")
+        return JsonResponse({}, status=400) # invalid request method
+    
+@csrf_exempt
+def token_login(request):
+    if request.method == 'POST':
+        try:
+            token = request.META.get('HTTP_AUTH_TOKEN')
+            check_token(token)
+            return JsonResponse({}, status=200) # login successful
+        
+        except TokenError as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except User.DoesNotExist as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+
+        except Exception as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+    else:
+        logger.debug(f"invalid request method: {request.method}")
         return JsonResponse({}, status=400) # invalid request method
     
 @csrf_exempt
@@ -146,6 +167,7 @@ def tracking(request):
             return JsonResponse({}, status=404)
 
     else:
+        logger.debug(f"invalid request method: {request.method}")
         return JsonResponse({}, status=400) # invalid request method
     
 @csrf_exempt
@@ -191,6 +213,7 @@ def tracking_id(request, id):
             logger.error(str(e))
             return JsonResponse({}, status=404)
     else:
+        logger.debug(f"invalid request method: {request.method}")
         return JsonResponse({}, status=404) # invalid request method
     
 @csrf_exempt
@@ -242,6 +265,7 @@ def addition(request):
 
 
     else:
+        logger.debug(f"invalid request method: {request.method}")
         return JsonResponse({}, status=404) # invalid request method
     
 @csrf_exempt
@@ -310,6 +334,7 @@ def exercise(request):
             return JsonResponse({}, status=404)
 
     else:
+        logger.debug(f"invalid request method: {request.method}")
         return JsonResponse({}, status=404) # invalid request method
     
 @csrf_exempt
@@ -325,6 +350,7 @@ def exercise_id(request, id):
 
             exercise = Exercise.objects.get(id=id)
 
+            # tähän pitää 
             return JsonResponse({"id": exercise.id,
                                  "name": exercise.name,
                                  "updated": exercise.updated
@@ -384,6 +410,7 @@ def exercise_id(request, id):
         return JsonResponse({}, status=200) # tracking deleted successfully
     
     else:
+        logger.debug(f"invalid request method: {request.method}")
         return JsonResponse({}, status=404) # invalid request method
     
 @csrf_exempt
@@ -409,6 +436,7 @@ def goal(request):
         return JsonResponse({}, status=200) # goal created successfully
 
     else:
+        logger.debug(f"invalid request method: {request.method}")
         return JsonResponse({}, status=404) # invalid request method
     
 @csrf_exempt
@@ -449,8 +477,6 @@ def user(request):
             logger.error(str(e))
             return JsonResponse({}, status=404)
         
-
-
     # update user details
     elif request.method == 'POST':
         pass
@@ -459,4 +485,5 @@ def user(request):
         pass
 
     else:
+        logger.debug(f"invalid request method: {request.method}")
         return JsonResponse({}, status=404)

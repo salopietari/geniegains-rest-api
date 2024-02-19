@@ -56,9 +56,9 @@ class ExerciseMovementConnection(models.Model):
     movement = models.ForeignKey(Movement, on_delete=models.CASCADE)
     created = models.DateField(default=timezone.now, editable=False)
     updated = models.DateField(default=timezone.now, editable=True)
-    sets = models.IntegerField()
-    reps = models.IntegerField()
-    weight = models.DecimalField(max_digits=10, decimal_places=2)
+    sets = models.IntegerField(blank=True)
+    reps = models.IntegerField(blank=True)
+    weight = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
     video = models.URLField(blank=True)
     time = models.DurationField(blank=True)
 
