@@ -48,13 +48,8 @@ def login(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_login(data, token)
+            check_login(data)
             return JsonResponse({}, status=200) # login successful
-        
-        except TokenError as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
         
         except User.DoesNotExist as e:
             logger.error(str(e))
@@ -350,11 +345,9 @@ def exercise_id(request, id):
 
             exercise = Exercise.objects.get(id=id)
 
-            # tätä pitää muokata, täytyy sisältää ne movementexerciseconnection id:t
             return JsonResponse({"id": exercise.id,
                                  "name": exercise.name,
-                                 "updated": exercise.updated
-                                 }, status=200) # got details of an exercise successfully
+                                 "updated": exercise.updated}, status=200) # got details of an exercise successfully
         
         except TokenError as e:
             logger.error(str(e))
@@ -417,23 +410,68 @@ def exercise_id(request, id):
 def goal(request):
     # get all goals
     if request.method == 'GET':
-        pass
+        try:
+            token = request.META.get('HTTP_AUTH_TOKEN')
+            check_token(token)
+
+            user = User.objects.get(token=token)
+
+            goals = Goal.objects.filter(user=user)
+            goal_list = [
+                {"id": str(goal.id), "name": goal.name}
+                for goal in goals
+            ]
+
+            return JsonResponse({goal_list}, status=200) # got all goals successfully
+        
+        except TokenError as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except User.DoesNotExist as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except Exception as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+
+
     # create goal
     elif request.method == 'POST':
-        token = request.META.get('HTTP_AUTH_TOKEN')
-        check_token(token)
-        user = User.objects.get(token=token)
-        data = json.loads(request.body)
+        try:
+            token = request.META.get('HTTP_AUTH_TOKEN')
+            check_token(token)
+            user = User.objects.get(token=token)
+            data = json.loads(request.body)
 
-        goal = Goal.objects.create(
-            user=user,
-            name=data.get('name'),
-            number=data.get('number'),
-            end=data.get('end'),
-            unit=data.get('unit')
-        )
+            check_field_length('name', data.get("name"), Goal)
 
-        return JsonResponse({}, status=200) # goal created successfully
+            goal = Goal.objects.create(
+                user=user,
+                name=data.get('name'),
+                number=data.get('number'),
+                end=data.get('end'),
+                unit=data.get('unit')
+            )
+
+            return JsonResponse({}, status=200) # goal created successfully
+        
+        except TokenError as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except User.DoesNotExist as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except ValidationError as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except Exception as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
 
     else:
         logger.debug(f"invalid request method: {request.method}")
@@ -443,7 +481,34 @@ def goal(request):
 def goal_id(request, id):
     # get details of a goal by id
     if request.method == 'GET':
-        pass
+        try:
+            token = request.META.get('HTTP_AUTH_TOKEN')
+            check_token(token)
+
+            user = User.objects.get(token=token)
+            goal = Goal.objects.get(id=id, user=user)
+
+            return JsonResponse({"id": goal.id,
+                                "name": goal.name,
+                                "end": goal.end,
+                                "number": goal.number}, status=200)
+        
+        except TokenError as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except User.DoesNotExist as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except ObjectDoesNotExist as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except Exception as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+
     # jotain
     elif request.method == 'POST':
         pass
@@ -465,12 +530,14 @@ def movement(request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
+            user = User.objects.get(token=token)
 
             data = json.loads(request.body)
             movement_name = data.get("name")
             check_field_length('name', movement_name, Movement)
 
             movement = Movement.objects.create(
+                user=user,
                 name=movement_name
             )
 

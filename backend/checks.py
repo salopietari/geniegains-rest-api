@@ -62,9 +62,8 @@ def check_token(token):
     
 # used when user is logging in
 @csrf_exempt
-def check_login(data, token):
+def check_login(data):
     try:
-        user = User.objects.get(token=token)
         username = data.get("username")
         password = data.get("password")
 
@@ -73,20 +72,12 @@ def check_login(data, token):
             raise ValidationError("Username is required")
         if not password:
             raise ValidationError("Password is required")
-        
-        # check that the token matching username is the same as in the given data
-        if str(username) != str(user.username):
-            logger.error(f"token: {token if 'token' in locals() else 'Not Available'}")
-            logger.error(f"username: {username if 'username' in locals() else 'Not Available'}")
-            raise ValidationError("Token doesn't match the username that was given in data")
 
-        # if the user was not found in the db or password is incorrect raise ValidationError
-        if user is None or not check_password(password, user.password):
-            raise ValidationError("Invalid username and or password")  
-    
-    except TokenError as e:
-        raise TokenError(e)
-    
+        user = User.objects.get(username=username)
+        
+        if check_password(password, user.password) is not True:
+            raise ValidationError("Wrong password")
+        
     except User.DoesNotExist as e:
         raise User.DoesNotExist(e)
         
@@ -118,9 +109,6 @@ def check_field_length(field_name, field_value, model_class):
     
     except ValidationError as e:
         raise ValidationError(e)
-
-    except ObjectDoesNotExist as e:
-        raise ObjectDoesNotExist(e)
         
     except Exception as e:
         raise Exception(e)
