@@ -492,7 +492,7 @@ def goal_id(request, id):
 
             return JsonResponse({"id": goal.id,
                                 "name": goal.name,
-                                "end": goal.end,
+                                "end": str(goal.end),
                                 "number": goal.number}, status=200)
         
         except TokenError as e:
