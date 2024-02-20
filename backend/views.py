@@ -424,7 +424,7 @@ def goal(request):
                 for goal in goals
             ]
 
-            return JsonResponse({goal_list}, status=200) # got all goals successfully
+            return JsonResponse({"goal_list": goal_list}, status=200) # got all goals successfully
         
         except TokenError as e:
             logger.error(str(e))
@@ -526,7 +526,32 @@ def goal_id(request, id):
 def movement(request):
     # get all movement(s) ONKS TÄÄ TURHA
     if request.method == 'GET':
-        pass
+        try:
+            token = request.META.get('HTTP_AUTH_TOKEN')
+            check_token(token)
+
+            user = User.objects.get(token=token)
+            movements = Movement.objects.filter(user_id=user.id)
+
+            movement_list = [
+                {"name": movement.name}
+                for movement in movements
+            ]
+
+            return JsonResponse({"movement_list": movement_list}, status=200) # got all movements successfully
+
+        except TokenError as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except User.DoesNotExist as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except TokenError as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+
     # create movement
     elif request.method == 'POST':
         try:
