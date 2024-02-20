@@ -49,7 +49,9 @@ def login(request):
         try:
             data = json.loads(request.body)
             check_login(data)
-            return JsonResponse({}, status=200) # login successful
+
+            user = User.objects.get(username=data.get("username"))
+            return JsonResponse({"token": user.token}, status=200) # login successful
         
         except User.DoesNotExist as e:
             logger.error(str(e))
