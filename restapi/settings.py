@@ -37,7 +37,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 APPEND_SLASH = False
 
@@ -102,6 +102,7 @@ CORS_ALLOW_HEADERS = [
     'Auth-Token',
 ]
 
+# varmaa nääki turhia pitää kattoo myöhemmi
 CORS_ALLOWED_ORIGINS = [
     'https://93s1sty-anonymous-8081.exp.direct',
     'https://w31qlui-anonymous-8081.exp.direct',
