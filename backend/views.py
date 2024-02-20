@@ -1,5 +1,6 @@
 import json
 import time
+from datetime import datetime
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
@@ -450,11 +451,13 @@ def goal(request):
 
             check_field_length('name', data.get("name"), Goal)
 
+            normal_timestamp = convert_unix_timestamp(data.get("end"))
+
             goal = Goal.objects.create(
                 user=user,
                 name=data.get('name'),
                 number=data.get('number'),
-                end=data.get('end'),
+                end=normal_timestamp,
                 unit=data.get('unit')
             )
 
@@ -628,3 +631,15 @@ def user(request):
     else:
         logger.debug(f"invalid request method: {request.method}")
         return JsonResponse({}, status=404)
+
+@csrf_exempt
+def convert_unix_timestamp(timestamp):
+    try:
+        # divided unix timestamp by 1000
+        timestamp /= 1000
+        # convert unix time stamp to datetime object
+        normal_date = datetime.fromtimestamp(timestamp)
+        return normal_date
+    
+    except Exception as e:
+        raise Exception(e)
