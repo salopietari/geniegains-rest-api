@@ -1,4 +1,5 @@
 import json
+import time
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
@@ -490,9 +491,12 @@ def goal_id(request, id):
             user = User.objects.get(token=token)
             goal = Goal.objects.get(id=id, user=user)
 
+            # convert end timestamp to unix timestamp (milliseconds since the epoch)
+            end_timestamp = int(time.mktime(goal.end.timetuple())) * 1000
+
             return JsonResponse({"id": goal.id,
                                 "name": goal.name,
-                                "end": str(goal.end),
+                                "end": end_timestamp,
                                 "number": goal.number}, status=200)
         
         except TokenError as e:
