@@ -1,6 +1,7 @@
 import json
 import time
 from datetime import datetime
+from datetime import timedelta
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
@@ -324,7 +325,7 @@ def exercise(request):
                 type=data.get('type')
             )
 
-            return JsonResponse({}, status=200) # created exercise successfully
+            return JsonResponse({"id": exercise.id}, status=200) # created exercise successfully
          
         except TokenError as e:
             logger.error(str(e))
@@ -648,7 +649,7 @@ def movement(request):
                 name=movement_name
             )
 
-            return JsonResponse({}, status=200) # movement created successfully
+            return JsonResponse({"id": movement.id}, status=200) # movement created successfully
 
         except TokenError as e:
             logger.error(str(e))
@@ -669,7 +670,135 @@ def movement(request):
     else:
         logger.debug(f"invalid request method: {request.method}")
         return JsonResponse({}, status=404) # invalid request method
+    
+@csrf_exempt
+def trainingplan(request):
+    # get all training plan(s)
+    if request.method == 'GET':
+        try:
+            token = request.META.get('HTTP_AUTH_TOKEN')
+            check_token(token)
 
+            user = User.objects.get(token=token)
+
+            trainingplans = TrainingPlan.objects.filter(user=user)
+            trainingplan_list = [{"id": trainingplan.id}
+                                 for trainingplan in trainingplans]
+            
+            return JsonResponse({"trainingplan_list": trainingplan_list}, status=200)
+
+        except TokenError as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except User.DoesNotExist as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except Exception as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+    # create training plan
+    elif request.method == 'POST':
+        try:
+            token = request.META.get('HTTP_AUTH_TOKEN')
+            check_token(token)
+            user = User.objects.get(token=token)
+
+            # data
+            data = json.loads(request.body)
+            name = data.get("name")
+            movements = data.get("movements")
+
+            # check permission
+            for movement in movements:
+                check_user_permission(user, Movement, movement)
+
+            # create training plan
+            training_plan = TrainingPlan.objects.create(user=user, name=name)
+            
+            # add movements to training plan
+            for movement_id in movements:
+                movement = Movement.objects.get(id=movement_id)
+                training_plan.movements.add(movement)
+
+
+            return JsonResponse({"id": training_plan.id}, status="200")
+
+        except Exception as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+
+    # delete training plan
+    elif request.method == 'DELETE':
+        pass
+
+    else:
+        logger.debug(f"invalid request method: {request.method}")
+        return JsonResponse({}, status=404) # invalid request method
+    
+@csrf_exempt
+def exercisemovementconnection(request):
+    if request.method == 'GET':
+        pass
+
+    # create exercisemovementconnection
+    elif request.method == 'POST':
+        try:
+            token = request.META.get('HTTP_AUTH_TOKEN')
+            check_token(token)
+            user = User.objects.get(token=token)
+
+            # data
+            data = json.loads(request.body)
+            exercise_id = data.get("exercise_id")
+            movement_id = data.get("movement_id")
+            reps = data.get("reps")
+            weight = data.get("weight")
+            video = data.get("video")
+            time = data.get("time")
+
+            # check permission
+            check_user_permission(user, Exercise, exercise_id)
+            check_user_permission(user, Movement, movement_id)
+
+            # get exercise and movement objects
+            exercise = Exercise.objects.get(id=exercise_id)
+            movement = Movement.objects.get(id=movement_id)
+
+            # create exercisemovementconnection
+            exercisemovementconnection = ExerciseMovementConnection.objects.create(
+                user=user,
+                exercise=exercise,
+                movement=movement,
+                reps=reps,
+                weight=weight,
+                video=video,
+                time=timedelta(minutes=time)
+            )
+
+            return JsonResponse({"id": exercisemovementconnection.id}, status=200)
+        
+        except TokenError as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+
+        except User.DoesNotExist as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except PermissionError as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except ObjectDoesNotExist as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+
+    else:
+        logger.debug(f"invalid request method: {request.method}")
+        return JsonResponse({}, status=404) # invalid request method
     
 @csrf_exempt
 def user(request):

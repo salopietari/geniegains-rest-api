@@ -13,5 +13,7 @@ urlpatterns = [
     path("goal", views.goal, name="goal"),
     path("goal/<int:id>", views.goal_id, name="goal_id"),
     path("user", views.user, name="user"),
-    path("movement", views.movement, name="movement")
+    path("movement", views.movement, name="movement"),
+    path("trainingplan", views.trainingplan, name="trainingplan"),
+    path("exercisemovementconnection", views.exercisemovementconnection, name="exercisemovementconnection")
 ]

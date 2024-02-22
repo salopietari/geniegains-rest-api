@@ -25,13 +25,21 @@ class Tracking(models.Model):
     created = models.DateTimeField(default=timezone.now, editable=False)
     updated = models.DateTimeField(default=timezone.now, editable=True)
 
-#class Type / Category ? pitäskö tehä sillekki oma (push, pull, legs, upper, lower etc.)
-
 class Movement(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, to_field="id")
     name = models.CharField(max_length=100)
 
+class TrainingPlan(models.Model):
+    id = models.AutoField(primary_key=True, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, to_field="id")
+    name = models.CharField(max_length=100)
+    movements = models.ManyToManyField(Movement)
+
+class TrainingPlanMovement(models.Model):
+    training_plan = models.ForeignKey(TrainingPlan, on_delete=models.CASCADE)
+    movement = models.ForeignKey(Movement, on_delete=models.CASCADE)
+    
 class Exercise(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, to_field="id")
@@ -49,16 +57,12 @@ class ExerciseMovementConnection(models.Model):
     movement = models.ForeignKey(Movement, on_delete=models.CASCADE)
     created = models.DateField(default=timezone.now, editable=False)
     updated = models.DateField(default=timezone.now, editable=True)
-    sets = models.IntegerField(blank=True)
     reps = models.IntegerField(blank=True)
     weight = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
-    video = models.URLField(blank=True)
-    time = models.DurationField(blank=True)
+    video = models.URLField(null=True, blank=True)
+    time = models.DurationField(null=True, blank=True)
 
-class TrainingPlan(models.Model):
-    id = models.AutoField(primary_key=True, editable=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, to_field="id")
-    movements = models.ManyToManyField(Movement)
+
 
 class Goal(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
