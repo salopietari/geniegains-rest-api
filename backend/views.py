@@ -573,7 +573,7 @@ def movement(request):
             movements = Movement.objects.filter(user_id=user.id)
 
             movement_list = [
-                {"name": movement.name}
+                { "id": movement.id, "name": movement.name}
                 for movement in movements
             ]
 
