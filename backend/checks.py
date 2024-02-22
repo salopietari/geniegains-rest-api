@@ -113,38 +113,25 @@ def check_field_length(field_name, field_value, model_class):
     except Exception as e:
         raise Exception(e)
 
-# check that the user trying to access tracking actually is the owner
+# check that user is the owner of whatever they are trying to access
+# example usage:
+# check_user_permission(user, Tracking, item_id)
+# 1. user = User object
+# 2. Tracking = The class item_id corresponds to
+# 3. item_id = id that corresponds to a Tracking object for example
 @csrf_exempt
-def check_user_tracking(user, tracking_id):
+def check_user_permission(user, model_class, item_id):
     try:
-        tracking = Tracking.objects.get(id=tracking_id)
+        item = model_class.objects.get(id=item_id)
 
-        if tracking.user != user:
-            raise PermissionError("User is not allowed to access the tracking")
+        if item.user != user:
+            raise PermissionError(f"User is not allowed to access the {model_class.__name__.lower()}")
 
     except PermissionError as e:
         raise PermissionError(e)
     
-    except Tracking.DoesNotExist as e:
-        raise Tracking.DoesNotExist(e)
-
-    except Exception as e:
-        raise Exception(e)
-    
-# check that the user trying to access exercise actually is the owner
-@csrf_exempt
-def check_user_exercise(user, exercise_id):
-    try:
-        exercise = Exercise.objects.get(id=exercise_id)
-
-        if exercise.user != user:
-            raise PermissionError("User is not allowed to access the exercise")
-        
-    except PermissionError as e:
-        raise PermissionError(e)
-    
-    except Exercise.DoesNotExist as e:
-        raise Exercise.DoesNotExist(e)
+    except ObjectDoesNotExist:
+        raise ObjectDoesNotExist(f"{model_class.__name__} does not exist with id: {item_id}")
 
     except Exception as e:
         raise Exception(e)

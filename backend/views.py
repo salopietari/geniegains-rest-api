@@ -146,7 +146,7 @@ def tracking(request):
                 name = tracking_name,
                 user = user
             )
-            return JsonResponse({}, status=200) # created tracking successfully
+            return JsonResponse({"id": tracking.id}, status=200) # created tracking successfully
         
         except TokenError as e:
             logger.error(str(e))
@@ -184,7 +184,7 @@ def tracking_id(request, id):
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
             user = User.objects.get(token=token)
-            check_user_tracking(user, id)
+            check_user_permission(user, Tracking, id)
 
             # get & delete tracking
             tracking_to_be_deleted = Tracking.objects.get(id=id)
@@ -345,7 +345,7 @@ def exercise_id(request, id):
             check_token(token)
 
             user = User.objects.get(token=token)
-            check_user_exercise(user, id)
+            check_user_permission(user, Exercise, id)
 
             exercise = Exercise.objects.get(id=id)
 
@@ -378,11 +378,13 @@ def exercise_id(request, id):
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
             user = User.objects.get(token=token)
-            check_user_exercise(user, id)
+            check_user_permission(user, Exercise, id)
 
             # get & delete exercise
             exercise_to_be_deleted = Exercise.objects.get(id=id)
             exercise_to_be_deleted.delete()
+
+            return JsonResponse({}, status=200) # exercise deleted successfully
 
         except PermissionError as e:
             logger.error(str(e))
@@ -403,8 +405,6 @@ def exercise_id(request, id):
         except Exception as e:
             logger.error(str(e))
             return JsonResponse({}, status=404)
-
-        return JsonResponse({}, status=200) # tracking deleted successfully
     
     else:
         logger.debug(f"invalid request method: {request.method}")
@@ -523,7 +523,39 @@ def goal_id(request, id):
         pass
     # delete goal by id
     elif request.method == 'DELETE':
-        pass
+        try:
+            token = request.META.get('HTTP_AUTH_TOKEN')
+            check_token(token)
+
+            user = User.objects.get(token=token)
+            check_user_permission(user, Goal, id)
+
+            goal = Goal.objects.get(user=user)
+            goal.delete()
+            
+            return JsonResponse({}, status=200) # goal deleted successfully
+        
+        except TokenError as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except User.DoesNotExist as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except PermissionError as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except ObjectDoesNotExist as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+
+        except Exception as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+
+
 
     else:
         logger.debug(f"invalid request method: {request.method}")
