@@ -534,11 +534,13 @@ def goal_id(request, id):
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
             user = User.objects.get(token=token)
+
+            check_user_permission(user, Goal, id)
             goal = Goal.objects.get(id=id)
 
             additions = Addition.objects.filter(goal=goal, user=user)
             addition_list = [{
-                "note": addition.note, "number": addition.number, "created": addition.created}
+                "note": addition.note, "number": addition.number, "created": int(time.mktime(addition.created.timetuple())) * 1000}
                 for addition in additions
             ]
 
