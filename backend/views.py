@@ -463,7 +463,7 @@ def goal(request):
             check_field_length('name', data.get("name"), Goal)
 
             normal_timestamp = convert_unix_timestamp(data.get("end"))
-
+            
             goal = Goal.objects.create(
                 user=user,
                 name=data.get('name'),
@@ -508,10 +508,17 @@ def goal_id(request, id):
             # convert end timestamp to unix timestamp (milliseconds since the epoch)
             end_timestamp = int(time.mktime(goal.end.timetuple())) * 1000
 
+            additions = Addition.objects.filter(goal=goal, user=user)
+            data = [{
+                "note": addition.note, "number": addition.number, "created": int(time.mktime(addition.created.timetuple())) * 1000}
+                for addition in additions
+            ]
+
             return JsonResponse({"id": goal.id,
+                                 "unit":goal.unit,
                                 "name": goal.name,
                                 "end": end_timestamp,
-                                "number": goal.number}, status=200)
+                                "number": goal.number,"data":data}, status=200)
         
         except TokenError as e:
             logger.error(str(e))
