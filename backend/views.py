@@ -217,16 +217,17 @@ def tracking_id(request, id):
     
 @csrf_exempt
 def addition(request):
-
     # create addition
     if request.method == 'POST':
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
+            user = User.objects.get(token=token)
             data = json.loads(request.body)
 
             # get json data
             tracking_id = data.get('tracking_id')
+            goal_id = data.get('goal_id')
             number = data.get('number')
             unit = data.get('unit')
             note = data.get('note')
@@ -234,13 +235,23 @@ def addition(request):
             # if tracking_id in json data is not null get the tracking object
             # else tracking will be null
             if tracking_id:
+                check_user_permission(user, Tracking, tracking_id)
                 tracking = Tracking.objects.get(id=tracking_id)
             else:
                 tracking = None
 
+            # same for goal_id
+            if goal_id:
+                check_user_permission(user, Goal, goal_id)
+                goal = Goal.objects.get(id=goal_id)
+            else:
+                goal = None
+
             # create addition
             addition = Addition.objects.create(
+                user=user,
                 tracking=tracking,
+                goal=goal,
                 number=number,
                 unit=unit,
                 note=note,
@@ -248,7 +259,7 @@ def addition(request):
                 updated=timezone.now()
             )
 
-            return JsonResponse({}, status=200) # addition created successfully
+            return JsonResponse({"id": addition.id}, status=200) # addition created successfully
             
         except TokenError as e:
             logger.error(str(e))
@@ -261,7 +272,6 @@ def addition(request):
         except Exception as e:
             logger.error(str(e))
             return JsonResponse({}, status=404)
-
 
     else:
         logger.debug(f"invalid request method: {request.method}")
@@ -461,7 +471,7 @@ def goal(request):
                 unit=data.get('unit')
             )
 
-            return JsonResponse({}, status=200) # goal created successfully
+            return JsonResponse({"id": goal.id}, status=200) # goal created successfully
         
         except TokenError as e:
             logger.error(str(e))
@@ -518,9 +528,38 @@ def goal_id(request, id):
             logger.error(str(e))
             return JsonResponse({}, status=404)
 
-    # jotain
+    # get all additions regarding one goal by id
     elif request.method == 'POST':
-        pass
+        try:
+            token = request.META.get('HTTP_AUTH_TOKEN')
+            check_token(token)
+            user = User.objects.get(token=token)
+            goal = Goal.objects.get(id=id)
+
+            additions = Addition.objects.filter(goal=goal, user=user)
+            addition_list = [{
+                "note": addition.note, "number": addition.number, "created": addition.created}
+                for addition in additions
+            ]
+
+            return JsonResponse({"additions_list": addition_list}, status=200)
+        
+        except TokenError as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except User.DoesNotExist as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except ObjectDoesNotExist as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+
+        except Exception as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
     # delete goal by id
     elif request.method == 'DELETE':
         try:
@@ -563,7 +602,7 @@ def goal_id(request, id):
     
 @csrf_exempt
 def movement(request):
-    # get all movement(s) ONKS TÄÄ TURHA
+    # get all movement(s)
     if request.method == 'GET':
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')

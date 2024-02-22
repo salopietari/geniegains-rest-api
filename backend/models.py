@@ -25,16 +25,6 @@ class Tracking(models.Model):
     created = models.DateTimeField(default=timezone.now, editable=False)
     updated = models.DateTimeField(default=timezone.now, editable=True)
 
-class Addition(models.Model):
-    id = models.AutoField(primary_key=True, editable=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, to_field="id")
-    tracking = models.ForeignKey(Tracking, on_delete=models.CASCADE, null=True)
-    created = models.DateField(default=timezone.now, editable=False)
-    updated = models.DateField(default=timezone.now, editable=True)
-    number = models.DecimalField(max_digits=10, decimal_places=2)
-    unit = models.CharField(max_length=10)
-    note = models.TextField(blank=True)
-
 #class Type / Category ? pitäskö tehä sillekki oma (push, pull, legs, upper, lower etc.)
 
 class Movement(models.Model):
@@ -79,3 +69,14 @@ class Goal(models.Model):
     updated = models.DateField(default=timezone.now, editable=True)
     end = models.DateField(default=timezone.now, editable=True)
     unit = models.CharField(max_length=10)
+
+class Addition(models.Model):
+    id = models.AutoField(primary_key=True, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, to_field="id")
+    tracking = models.ForeignKey(Tracking, on_delete=models.CASCADE, null=True)
+    goal = models.ForeignKey(Goal, on_delete=models.CASCADE, null=True)
+    created = models.DateField(default=timezone.now, editable=False)
+    updated = models.DateField(default=timezone.now, editable=True)
+    number = models.DecimalField(max_digits=10, decimal_places=2)
+    unit = models.CharField(max_length=10)
+    note = models.TextField(blank=True)
