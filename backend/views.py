@@ -748,7 +748,41 @@ def trainingplan(request):
 @csrf_exempt
 def exercisemovementconnection(request):
     if request.method == 'GET':
-        pass
+        try:
+            token = request.META.get('HTTP_AUTH_TOKEN')
+            check_token(token)
+            user = User.objects.get(token=token)
+
+            exercisemovementconnections = ExerciseMovementConnection.objects.filter(user=user)
+            exercisemovementconnection_list = [
+                {"id": str(exercisemovementconnection.id),
+                 "created": exercisemovementconnection.created,
+                 "updated": exercisemovementconnection.updated,
+                 "exercise_id": exercisemovementconnection.exercise.id,
+                 "exercise_name": exercisemovementconnection.exercise.name,
+                 "movement_id": exercisemovementconnection.movement.id,
+                 "movement_name": exercisemovementconnection.movement.name,
+                 "reps": exercisemovementconnection.reps,
+                 "weight": exercisemovementconnection.weight,
+                 "video": exercisemovementconnection.video,
+                 "time" :exercisemovementconnection.time
+                 }
+                for exercisemovementconnection in exercisemovementconnections
+            ]
+
+            return JsonResponse({"exercisemovementconnection_list": exercisemovementconnection_list}, status=200)
+
+        except TokenError as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except User.DoesNotExist as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+
+        except Exception as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
 
     # create exercisemovementconnection
     elif request.method == 'POST':
