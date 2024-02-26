@@ -62,8 +62,6 @@ class ExerciseMovementConnection(models.Model):
     video = models.URLField(null=True, blank=True)
     time = models.DurationField(null=True, blank=True)
 
-
-
 class Goal(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, to_field="id")
@@ -73,6 +71,7 @@ class Goal(models.Model):
     updated = models.DateField(default=timezone.now, editable=True)
     end = models.DateField(default=timezone.now, editable=True)
     unit = models.CharField(max_length=10)
+    finished = models.BooleanField(default=False)
 
 class Addition(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
