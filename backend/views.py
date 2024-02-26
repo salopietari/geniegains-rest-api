@@ -752,7 +752,6 @@ def exercisemovementconnection(request):
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
             user = User.objects.get(token=token)
-
             exercisemovementconnections = ExerciseMovementConnection.objects.filter(user=user)
             exercisemovementconnection_list = [
                 {"id": str(exercisemovementconnection.id),
@@ -783,7 +782,7 @@ def exercisemovementconnection(request):
         except Exception as e:
             logger.error(str(e))
             return JsonResponse({}, status=404)
-
+        
     # create exercisemovementconnection
     elif request.method == 'POST':
         try:
@@ -834,6 +833,39 @@ def exercisemovementconnection(request):
             return JsonResponse({}, status=404)
         
         except ObjectDoesNotExist as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+
+    else:
+        logger.debug(f"invalid request method: {request.method}")
+        return JsonResponse({}, status=404) # invalid request method
+    
+@csrf_exempt
+def exercisemovementconnection_id(request, id):
+    if request.method == 'GET':
+        try:
+            token = request.META.get('HTTP_AUTH_TOKEN')
+            check_token(token)
+            user = User.objects.get(token=token)
+            check_user_permission(user, Exercise, id)
+            exercise = Exercise.objects.get(id=id)
+            emcs = ExerciseMovementConnection.objects.filter(exercise=exercise)
+            emcs_list = [{"id": emc.id,
+                          "exercise_id": emc.exercise.id,
+                          "exercise_name": emc.exercise.name,
+                          "movement_id": emc.movement.id,
+                          "movement_name": emc.movement.name,
+                          "created": emc.created,
+                          "updated": emc.updated,
+                          "reps": emc.reps,
+                          "weight": emc.weight,
+                          "video": emc.video,
+                          "time": emc.time}
+                          for emc in emcs]
+            
+            return JsonResponse({"emcs_list": str(emcs_list)}, status=200)
+            
+        except Exception as e:
             logger.error(str(e))
             return JsonResponse({}, status=404)
 
