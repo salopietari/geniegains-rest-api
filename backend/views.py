@@ -747,6 +747,7 @@ def trainingplan(request):
     
 @csrf_exempt
 def exercisemovementconnection(request):
+    # get all emcs for user
     if request.method == 'GET':
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
@@ -842,6 +843,7 @@ def exercisemovementconnection(request):
     
 @csrf_exempt
 def exercisemovementconnection_id(request, id):
+    # get all emcs by exercise id
     if request.method == 'GET':
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
@@ -864,6 +866,22 @@ def exercisemovementconnection_id(request, id):
                           for emc in emcs]
             
             return JsonResponse({"emcs_list": str(emcs_list)}, status=200)
+        
+        except TokenError as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except User.DoesNotExist as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except PermissionError as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+        except ObjectDoesNotExist as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
             
         except Exception as e:
             logger.error(str(e))
