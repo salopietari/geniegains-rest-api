@@ -361,7 +361,9 @@ def exercise_id(request, id):
             exercise = Exercise.objects.get(id=id)
 
             return JsonResponse({"id": exercise.id,
+                                 "note": exercise.note,
                                  "name": exercise.name,
+                                 "created": exercise.created,
                                  "updated": exercise.updated}, status=200) # got details of an exercise successfully
         
         except TokenError as e:
@@ -507,10 +509,10 @@ def goal_id(request, id):
 
             # convert end timestamp to unix timestamp (milliseconds since the epoch)
             end_timestamp = int(time.mktime(goal.end.timetuple())) * 1000
-
+            created_timestamp = int(time.mktime(goal.created.timetuple())) * 1000
             additions = Addition.objects.filter(goal=goal, user=user)
             data = [{
-                "note": addition.note, "number": addition.number, "created": int(time.mktime(addition.created.timetuple())) * 1000}
+                "note": addition.note, "number": float(addition.number), "created": int(time.mktime(addition.created.timetuple())) * 1000}
                 for addition in additions
             ]
 
@@ -518,6 +520,7 @@ def goal_id(request, id):
                                  "unit":goal.unit,
                                 "name": goal.name,
                                 "end": end_timestamp,
+                                "created": created_timestamp,
                                 "number": goal.number,"data":data}, status=200)
         
         except TokenError as e:
