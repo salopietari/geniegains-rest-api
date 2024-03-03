@@ -1,12 +1,10 @@
 import logging
-from django.conf import settings
-
 logger = logging.getLogger(__name__)
-
-log_file_path = settings.LOGGING['handlers']['file']['filename']
-
-logging.basicConfig(
-    filename=log_file_path,
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+file_handler = logging.FileHandler("log.txt")
+file_handler.setFormatter(formatter)
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
+logger.addHandler(stream_handler)
