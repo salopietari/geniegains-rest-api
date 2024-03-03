@@ -4,5 +4,5 @@ class PasswordTooShortError(Exception):
 class PasswordsDoNotMatchError(Exception):
     pass
 
-class TokenError(Exception):
+class UsernameAlreadyExistsError(Exception):
     pass

@@ -70,7 +70,27 @@ def check_login(data):
             raise Exception("Wrong password")
     
     except Exception as e:
-        raise Exception(e) 
+        raise Exception(e)
+    
+@csrf_exempt
+def check_username(username):
+    try:
+        if not username:
+            raise Exception("Username is required")
+        
+        if not username.isalnum():
+            raise Exception("Username must contain only letters and numbers.")
+        
+        user = User.objects.filter(username=username)
+
+        if user.exists():
+            raise UsernameAlreadyExistsError("Username already exists")
+        
+    except UsernameAlreadyExistsError as e:
+        raise UsernameAlreadyExistsError(e)
+        
+    except Exception as e:
+        raise Exception(e)
     
 # used to check field lengths
 # example usage:
