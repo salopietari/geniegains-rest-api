@@ -34,12 +34,9 @@ def register(request):
             logger.error(str(e))
             return JsonResponse({"error": str(e)}, status=404)
 
-        except ValidationError as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-
         except Exception as e:
             logger.error(str(e))
+            logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
 
     else:
@@ -55,14 +52,6 @@ def login(request):
 
             user = User.objects.get(username=data.get("username"))
             return JsonResponse({"token": user.token}, status=200) # login successful
-        
-        except User.DoesNotExist as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-
-        except ValidationError as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
 
         except Exception as e:
             logger.error(str(e))
@@ -79,14 +68,6 @@ def token_login(request):
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
             return JsonResponse({}, status=200) # login successful
-        
-        except TokenError as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-        
-        except User.DoesNotExist as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
 
         except Exception as e:
             logger.error(str(e))
@@ -114,19 +95,6 @@ def tracking(request):
 
             return JsonResponse({"tracking_list": tracking_list}, status=200)
 
-        except TokenError as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-
-        except ObjectDoesNotExist as e:
-            logger.error(str(e))
-            logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
-            return JsonResponse({}, status=404)
-
-        except ValidationError as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-
         except Exception as e:
             logger.error(str(e))
             return JsonResponse({}, status=404)
@@ -148,22 +116,10 @@ def tracking(request):
                 user = user
             )
             return JsonResponse({"id": tracking.id}, status=200) # created tracking successfully
-        
-        except TokenError as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-
-        except ObjectDoesNotExist as e:
-            logger.error(str(e))
-            logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
-            return JsonResponse({}, status=404)
-
-        except ValidationError as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
 
         except Exception as e:
             logger.error(str(e))
+            logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
 
     else:
@@ -192,22 +148,6 @@ def tracking_id(request, id):
             tracking_to_be_deleted.delete()
 
             return JsonResponse({}, status=200) # tracking deleted successfully
-
-        except PermissionError as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-        
-        except Tracking.DoesNotExist as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-            
-        except TokenError as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-        
-        except User.DoesNotExist as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
 
         except Exception as e:
             logger.error(str(e))
@@ -261,17 +201,10 @@ def addition(request):
             )
 
             return JsonResponse({"id": addition.id}, status=200) # addition created successfully
-            
-        except TokenError as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-        
-        except User.DoesNotExist as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
 
         except Exception as e:
             logger.error(str(e))
+            logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
 
     else:
@@ -296,17 +229,10 @@ def exercise(request):
 
             return JsonResponse({"exercise_list": exercise_list}, status=200)
 
-        except TokenError as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-        
-        except User.DoesNotExist as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-
         except Exception as e:
             logger.error(str(e))
             return JsonResponse({}, status=404)
+        
     # create exercise
     elif request.method == 'POST':
         try:
@@ -326,21 +252,10 @@ def exercise(request):
             )
 
             return JsonResponse({"id": exercise.id}, status=200) # created exercise successfully
-         
-        except TokenError as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-        
-        except User.DoesNotExist as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-        
-        except ValidationError as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
 
         except Exception as e:
             logger.error(str(e))
+            logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
 
     else:
@@ -365,18 +280,6 @@ def exercise_id(request, id):
                                  "name": exercise.name,
                                  "created": exercise.created,
                                  "updated": exercise.updated}, status=200) # got details of an exercise successfully
-        
-        except TokenError as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-        
-        except User.DoesNotExist as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-        
-        except PermissionError as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
 
         except Exception as e:
             logger.error(str(e))
@@ -398,22 +301,6 @@ def exercise_id(request, id):
             exercise_to_be_deleted.delete()
 
             return JsonResponse({}, status=200) # exercise deleted successfully
-
-        except PermissionError as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-        
-        except Exercise.DoesNotExist as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-            
-        except TokenError as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-        
-        except User.DoesNotExist as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
 
         except Exception as e:
             logger.error(str(e))
@@ -440,14 +327,6 @@ def goal(request):
             ]
 
             return JsonResponse({"goal_list": goal_list}, status=200) # got all goals successfully
-        
-        except TokenError as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-        
-        except User.DoesNotExist as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
         
         except Exception as e:
             logger.error(str(e))
@@ -476,20 +355,9 @@ def goal(request):
 
             return JsonResponse({"id": goal.id}, status=200) # goal created successfully
         
-        except TokenError as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-        
-        except User.DoesNotExist as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-        
-        except ValidationError as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-        
         except Exception as e:
             logger.error(str(e))
+            logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
 
     else:
@@ -523,18 +391,6 @@ def goal_id(request, id):
                                 "created": created_timestamp,
                                 "number": goal.number,"data":data}, status=200)
         
-        except TokenError as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-        
-        except User.DoesNotExist as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-        
-        except ObjectDoesNotExist as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-        
         except Exception as e:
             logger.error(str(e))
             return JsonResponse({}, status=404)
@@ -556,18 +412,6 @@ def goal_id(request, id):
             ]
 
             return JsonResponse({"additions_list": addition_list}, status=200)
-        
-        except TokenError as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-        
-        except User.DoesNotExist as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-        
-        except ObjectDoesNotExist as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
 
         except Exception as e:
             logger.error(str(e))
@@ -586,28 +430,10 @@ def goal_id(request, id):
             goal.delete()
             
             return JsonResponse({}, status=200) # goal deleted successfully
-        
-        except TokenError as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-        
-        except User.DoesNotExist as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-        
-        except PermissionError as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-        
-        except ObjectDoesNotExist as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
 
         except Exception as e:
             logger.error(str(e))
             return JsonResponse({}, status=404)
-
-
 
     else:
         logger.debug(f"invalid request method: {request.method}")
@@ -630,16 +456,8 @@ def movement(request):
             ]
 
             return JsonResponse({"movement_list": movement_list}, status=200) # got all movements successfully
-
-        except TokenError as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
         
-        except User.DoesNotExist as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-        
-        except TokenError as e:
+        except Exception as e:
             logger.error(str(e))
             return JsonResponse({}, status=404)
 
@@ -660,21 +478,10 @@ def movement(request):
             )
 
             return JsonResponse({"id": movement.id}, status=200) # movement created successfully
-
-        except TokenError as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-        
-        except User.DoesNotExist as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-
-        except ValidationError as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
         
         except Exception as e:
             logger.error(str(e))
+            logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
 
     else:
@@ -696,14 +503,6 @@ def trainingplan(request):
                                  for trainingplan in trainingplans]
             
             return JsonResponse({"trainingplan_list": trainingplan_list}, status=200)
-
-        except TokenError as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-        
-        except User.DoesNotExist as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
         
         except Exception as e:
             logger.error(str(e))
@@ -738,6 +537,7 @@ def trainingplan(request):
 
         except Exception as e:
             logger.error(str(e))
+            logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
 
     # delete training plan
@@ -774,14 +574,6 @@ def exercisemovementconnection(request):
             ]
 
             return JsonResponse({"exercisemovementconnection_list": exercisemovementconnection_list}, status=200)
-
-        except TokenError as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-        
-        except User.DoesNotExist as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
 
         except Exception as e:
             logger.error(str(e))
@@ -824,20 +616,9 @@ def exercisemovementconnection(request):
 
             return JsonResponse({"id": exercisemovementconnection.id}, status=200)
         
-        except TokenError as e:
+        except Exception as e:
             logger.error(str(e))
-            return JsonResponse({}, status=404)
-
-        except User.DoesNotExist as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-        
-        except PermissionError as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-        
-        except ObjectDoesNotExist as e:
-            logger.error(str(e))
+            logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
 
     else:
@@ -869,22 +650,6 @@ def exercisemovementconnection_id(request, id):
                           for emc in emcs]
             
             return JsonResponse({"emcs_list": str(emcs_list)}, status=200)
-        
-        except TokenError as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-        
-        except User.DoesNotExist as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-        
-        except PermissionError as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-        
-        except ObjectDoesNotExist as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
             
         except Exception as e:
             logger.error(str(e))
@@ -904,14 +669,6 @@ def user(request):
 
             user = User.objects.get(token=token)
             return JsonResponse({"username": user.username, "email": user.email, "unit": user.unit, "experience": user.experience}, status=200)
-
-        except TokenError as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-        
-        except User.DoesNotExist as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
 
         except Exception as e:
             logger.error(str(e))
