@@ -311,6 +311,31 @@ def exercise_id(request, id):
     # jotain
     elif request.method == 'POST':
         pass
+
+    # update / edit exercise by id
+    elif request.method == 'PATCH':
+        try:
+            token = request.META.get('HTTP_AUTH_TOKEN')
+            check_token(token)
+            user = User.objects.get(token=token)
+            data = json.loads(request.body)
+
+            check_user_permission(user, Exercise, id)
+            check_field_length('name', data.get('name'), Exercise)
+
+            exercise = Exercise.objects.get(id=id)
+            exercise.name = data.get('name')
+            exercise.note = data.get('note')
+            exercise.type = data.get('type')
+            exercise.updated = timezone.now()
+            exercise.save()
+
+            return JsonResponse({}, status=200) # exercise updated successfully
+
+        except Exception as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
     # delete exercise by id
     elif request.method == 'DELETE':
         try:
@@ -648,6 +673,7 @@ def exercisemovementconnection(request):
         logger.debug(f"invalid request method: {request.method}")
         return JsonResponse({}, status=404)
     
+# id is exercise id
 @csrf_exempt
 def exercisemovementconnection_id(request, id):
     # get all emcs by exercise id
@@ -674,6 +700,40 @@ def exercisemovementconnection_id(request, id):
             
             return JsonResponse({"emcs_list": str(emcs_list)}, status=200)
             
+        except Exception as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+    # update / edit exercisemovementconnection by exercise id
+    elif request.method == 'PATCH':
+        try:
+            token = request.META.get('HTTP_AUTH_TOKEN')
+            check_token(token)
+            user = User.objects.get(token=token)
+            data = json.loads(request.body)
+            emc_id = data.get("id")
+            reps = data.get("reps")
+            weight = data.get("weight")
+            video = data.get("video")
+            time = data.get("time")
+
+            check_user_permission(user, Exercise, id)
+            check_user_permission(user, ExerciseMovementConnection, emc_id)
+            emc = ExerciseMovementConnection.objects.get(id=emc_id)
+            exercise = Exercise.objects.get(id=id)
+
+            exercise.updated = timezone.now()
+            exercise.save()
+
+            emc.reps = reps
+            emc.weight = weight
+            emc.video = video
+            emc.time = timedelta(minutes=time)
+            emc.updated = timezone.now()
+            emc.save()
+
+            return JsonResponse({}, status=200)
+        
         except Exception as e:
             logger.error(str(e))
             return JsonResponse({}, status=404)
