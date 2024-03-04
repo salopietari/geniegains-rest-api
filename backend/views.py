@@ -163,7 +163,31 @@ def tracking_id(request, id):
 
     # get every addition related to one tracking (?)
     if request.method == 'GET':
-        pass
+        try:
+            token = request.META.get('HTTP_AUTH_TOKEN')
+            check_token(token)
+            user = User.objects.get(token=token)
+            check_user_permission(user, Tracking, id)
+            tracking = Tracking.objects.get(id=id)
+            additions = Addition.objects.filter(tracking=tracking, user=user)
+            
+            data = [{'id': addition.id,
+                     'user_id': addition.user.id,
+                     'tracking_id': addition.tracking.id if addition.tracking else None,
+                     'goal_id': addition.goal.id if addition.goal else None,
+                     'created': addition.created,
+                     'updated': addition.updated,
+                     'number': str(addition.number),  # Convert DecimalField to string for JSON serialization
+                     'unit': addition.unit,
+                     'note': addition.note} for addition in additions]
+
+            # Return the JSON response
+            return JsonResponse({'additions': data}, status=200)
+
+        except Exception as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
     # add an addition to tracking (?)
     elif request.method == 'POST':
         pass
