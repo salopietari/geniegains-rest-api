@@ -905,7 +905,27 @@ def user(request):
 
     # delete user
     elif request.method == 'DELETE':
-        pass
+        try:
+            token = request.META.get('HTTP_AUTH_TOKEN')
+            check_token(token)
+            user = User.objects.get(token=token)
+            data = json.loads(request.body)
+            password = data.get("password")
+            if check_password(password, user.password):
+                user.delete()
+                return JsonResponse({}, status=200)
+            raise PasswordsDoNotMatchError("Password is incorrect")
+        
+        except PasswordsDoNotMatchError as e:
+            logger.error(str(e))
+            logger.debug(f"token: {token if 'token' in locals() else 'Not available'}")
+            logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
+            return JsonResponse({"error": "Password is incorrect"}, status=404)
+        
+        except Exception as e:
+            logger.error(str(e))
+            logger.debug(f"token: {token if 'token' in locals() else 'Not available'}")
+            return JsonResponse({}, status=404)
 
     else:
         logger.error(f"invalid request method: {request.method}")
