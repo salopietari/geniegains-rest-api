@@ -171,18 +171,17 @@ def tracking_id(request, id):
             tracking = Tracking.objects.get(id=id)
             additions = Addition.objects.filter(tracking=tracking, user=user)
             
-            data = [{'id': addition.id,
+            addition_list = [{'id': addition.id,
                      'user_id': addition.user.id,
                      'tracking_id': addition.tracking.id if addition.tracking else None,
                      'goal_id': addition.goal.id if addition.goal else None,
                      'created': addition.created,
                      'updated': addition.updated,
-                     'number': str(addition.number),  # Convert DecimalField to string for JSON serialization
+                     'number': str(addition.number),
                      'unit': addition.unit,
                      'note': addition.note} for addition in additions]
-
-            # Return the JSON response
-            return JsonResponse({'additions': data}, status=200)
+            
+            return JsonResponse({'addition_list': addition_list}, status=200)
 
         except Exception as e:
             logger.error(str(e))
