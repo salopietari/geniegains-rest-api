@@ -49,7 +49,7 @@ def register(request):
             return JsonResponse({}, status=404)
 
     else:
-        logger.debug(f"invalid request method: {request.method}")
+        logger.error(f"invalid request method: {request.method}")
         return JsonResponse({}, status=400)
 
 @csrf_exempt
@@ -67,7 +67,7 @@ def login(request):
             return JsonResponse({}, status=404)
         
     else:
-        logger.debug(f"invalid request method: {request.method}")
+        logger.error(f"invalid request method: {request.method}")
         return JsonResponse({}, status=400)
     
 @csrf_exempt
@@ -83,7 +83,7 @@ def token_login(request):
             return JsonResponse({}, status=404)
         
     else:
-        logger.debug(f"invalid request method: {request.method}")
+        logger.error(f"invalid request method: {request.method}")
         return JsonResponse({}, status=400)
      
 @csrf_exempt
@@ -106,7 +106,7 @@ def register_username(request):
             return JsonResponse({}, status=404)
         
     else:
-        logger.debug(f"invalid request method: {request.method}")
+        logger.error(f"invalid request method: {request.method}")
         return JsonResponse({}, status=400)
 
 @csrf_exempt
@@ -154,7 +154,7 @@ def tracking(request):
             return JsonResponse({}, status=404)
 
     else:
-        logger.debug(f"invalid request method: {request.method}")
+        logger.error(f"invalid request method: {request.method}")
         return JsonResponse({}, status=400)
     
 @csrf_exempt
@@ -206,7 +206,7 @@ def tracking_id(request, id):
             logger.error(str(e))
             return JsonResponse({}, status=404)
     else:
-        logger.debug(f"invalid request method: {request.method}")
+        logger.error(f"invalid request method: {request.method}")
         return JsonResponse({}, status=404)
     
 @csrf_exempt
@@ -261,7 +261,7 @@ def addition(request):
             return JsonResponse({}, status=404)
 
     else:
-        logger.debug(f"invalid request method: {request.method}")
+        logger.error(f"invalid request method: {request.method}")
         return JsonResponse({}, status=404)
     
 @csrf_exempt
@@ -312,7 +312,7 @@ def exercise(request):
             return JsonResponse({}, status=404)
 
     else:
-        logger.debug(f"invalid request method: {request.method}")
+        logger.error(f"invalid request method: {request.method}")
         return JsonResponse({}, status=404)
     
 @csrf_exempt
@@ -385,7 +385,7 @@ def exercise_id(request, id):
             return JsonResponse({}, status=404)
     
     else:
-        logger.debug(f"invalid request method: {request.method}")
+        logger.error(f"invalid request method: {request.method}")
         return JsonResponse({}, status=404)
     
 @csrf_exempt
@@ -439,7 +439,7 @@ def goal(request):
             return JsonResponse({}, status=404)
 
     else:
-        logger.debug(f"invalid request method: {request.method}")
+        logger.error(f"invalid request method: {request.method}")
         return JsonResponse({}, status=404)
     
 @csrf_exempt
@@ -514,7 +514,7 @@ def goal_id(request, id):
             return JsonResponse({}, status=404)
 
     else:
-        logger.debug(f"invalid request method: {request.method}")
+        logger.error(f"invalid request method: {request.method}")
         return JsonResponse({}, status=404)
     
 @csrf_exempt
@@ -563,7 +563,7 @@ def movement(request):
             return JsonResponse({}, status=404)
 
     else:
-        logger.debug(f"invalid request method: {request.method}")
+        logger.error(f"invalid request method: {request.method}")
         return JsonResponse({}, status=404)
     
 @csrf_exempt
@@ -624,6 +624,10 @@ def trainingplan(request):
             logger.error(str(e))
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
+        
+    else:
+        logger.error(f"invalid request method: {request.method}")
+        return JsonResponse({}, status=404)
         
 @csrf_exempt
 def trainingplan_id(request, id):
@@ -695,7 +699,7 @@ def trainingplan_id(request, id):
             return JsonResponse({}, status=404)
 
     else:
-        logger.debug(f"invalid request method: {request.method}")
+        logger.error(f"invalid request method: {request.method}")
         return JsonResponse({}, status=404)
     
 @csrf_exempt
@@ -727,6 +731,7 @@ def exercisemovementconnection(request):
 
         except Exception as e:
             logger.error(str(e))
+            logger.debug(f"token: {token if 'token' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
         
     # create exercisemovementconnection
@@ -768,11 +773,12 @@ def exercisemovementconnection(request):
         
         except Exception as e:
             logger.error(str(e))
+            logger.debug(f"token: {token if 'token' in locals() else 'Not available'}")
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
 
     else:
-        logger.debug(f"invalid request method: {request.method}")
+        logger.error(f"invalid request method: {request.method}")
         return JsonResponse({}, status=404)
     
 # id is exercise id
@@ -804,6 +810,8 @@ def exercisemovementconnection_id(request, id):
             
         except Exception as e:
             logger.error(str(e))
+            logger.debug(f"token: {token if 'token' in locals() else 'Not available'}")
+            logger.debug(f"id: {id if 'id' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
         
     # update / edit exercisemovementconnection by exercise id
@@ -838,10 +846,13 @@ def exercisemovementconnection_id(request, id):
         
         except Exception as e:
             logger.error(str(e))
+            logger.debug(f"token: {token if 'token' in locals() else 'Not available'}")
+            logger.debug(f"id: {id if 'id' in locals() else 'Not available'}")
+            logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
 
     else:
-        logger.debug(f"invalid request method: {request.method}")
+        logger.error(f"invalid request method: {request.method}")
         return JsonResponse({}, status=404)
     
 @csrf_exempt
@@ -857,17 +868,43 @@ def user(request):
 
         except Exception as e:
             logger.error(str(e))
+            logger.debug(f"token: {token if 'token' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
         
     # update user details
-    elif request.method == 'POST':
-        pass
+    elif request.method == 'PATCH':
+        try:
+            token = request.META.get('HTTP_AUTH_TOKEN')
+            check_token(token)
+            user = User.objects.get(token=token)
+            data = json.loads(request.body)
+
+            # define fields to update
+            fields_to_update = ['email', 'username', 'password', 'unit', 'experience']
+
+            # update user details based on the fields provided in the request data
+            for field in fields_to_update:
+                if field in data and data[field]:
+                    setattr(user, field, data[field])
+
+            # validate fields and save user
+            user.full_clean()
+            user.save()
+            return JsonResponse({"message": "User updated successfully"}, status=200)
+
+        
+        except Exception as e:
+            logger.error(str(e))
+            logger.debug(f"token: {token if 'token' in locals() else 'Not available'}")
+            logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
+            return JsonResponse({}, status=404)
+
     # delete user
     elif request.method == 'DELETE':
         pass
 
     else:
-        logger.debug(f"invalid request method: {request.method}")
+        logger.error(f"invalid request method: {request.method}")
         return JsonResponse({}, status=404)
 
 @csrf_exempt
