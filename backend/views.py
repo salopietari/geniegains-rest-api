@@ -111,7 +111,6 @@ def register_username(request):
 
 @csrf_exempt
 def tracking(request):
-
     # get all trackings for a user
     if request.method == 'GET':
         try:
@@ -160,7 +159,6 @@ def tracking(request):
     
 @csrf_exempt
 def tracking_id(request, id):
-
     # get every addition related to one tracking (?)
     if request.method == 'GET':
         try:
@@ -683,7 +681,18 @@ def trainingplan_id(request, id):
 
     # delete training plan
     elif request.method == 'DELETE':
-        pass
+        try:
+            token = request.META.get('HTTP_AUTH_TOKEN')
+            check_token(token)
+            user = User.objects.get(token=token)
+            check_user_permission(user, TrainingPlan, id)
+            training_plan = TrainingPlan.objects.get(id=id)
+            training_plan.delete()
+            return JsonResponse({}, status=200)
+
+        except Exception as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
 
     else:
         logger.debug(f"invalid request method: {request.method}")
