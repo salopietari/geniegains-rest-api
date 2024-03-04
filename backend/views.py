@@ -2,6 +2,7 @@ import json
 import time
 from datetime import datetime
 from datetime import timedelta
+from django.contrib.auth.hashers import make_password
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
@@ -885,7 +886,10 @@ def user(request):
             # update user details based on the fields provided in the request data
             for field in fields_to_update:
                 if field in data and data[field]:
-                    setattr(user, field, data[field])
+                    if field == 'password':
+                        setattr(user, field, make_password(data['password']))
+                    else:
+                        setattr(user, field, data[field])
 
             # validate fields and save user
             user.full_clean()
