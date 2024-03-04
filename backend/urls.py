@@ -16,6 +16,7 @@ urlpatterns = [
     path("user", views.user, name="user"),
     path("movement", views.movement, name="movement"),
     path("trainingplan", views.trainingplan, name="trainingplan"),
+    path("trainingplan/<int:id>", views.trainingplan_id, name="trainingplan_id"),
     path("exercisemovementconnection", views.exercisemovementconnection, name="exercisemovementconnection"),
     path("exercisemovementconnection/<int:id>", views.exercisemovementconnection_id, name="exercisemovementconnection_id")
 ]

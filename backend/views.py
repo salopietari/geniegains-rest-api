@@ -6,10 +6,19 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.contrib.auth.hashers import *
+from rest_framework import generics
 from backend.models import *
 from backend.checks import *
 from backend.exceptions import *
 from backend.loghandler import *
+from backend.serializers import *
+
+class TrainingPlanList(generics.ListAPIView):
+    serializer_class = TrainingPlanSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        return TrainingPlan.objects.filter(user=user)
 
 @csrf_exempt
 def register(request):
@@ -543,13 +552,20 @@ def trainingplan(request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
-
             user = User.objects.get(token=token)
-
             trainingplans = TrainingPlan.objects.filter(user=user)
-            trainingplan_list = [{"id": trainingplan.id}
-                                 for trainingplan in trainingplans]
-            
+            trainingplan_list = []
+            for trainingplan in trainingplans:
+                movements_list = []
+                for movement in trainingplan.movements.all():
+                    movements_list.append({"id": movement.id, "name": movement.name})
+                trainingplan_dict = {
+                    "id": trainingplan.id,
+                    "training_plan_name": trainingplan.name,
+                    "movements": movements_list
+                }
+                trainingplan_list.append(trainingplan_dict)
+
             return JsonResponse({"trainingplan_list": trainingplan_list}, status=200)
         
         except Exception as e:
@@ -586,6 +602,60 @@ def trainingplan(request):
         except Exception as e:
             logger.error(str(e))
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
+            return JsonResponse({}, status=404)
+        
+@csrf_exempt
+def trainingplan_id(request, id):
+    # get training plan by id
+    if request.method == 'GET':
+        try:
+            token = request.META.get('HTTP_AUTH_TOKEN')
+            check_token(token)
+            user = User.objects.get(token=token)
+            check_user_permission(user, TrainingPlan, id)
+            training_plan = TrainingPlan.objects.get(id=id)
+            movements = training_plan.movements.all()
+            movement_list = [{"id": movement.id, "name": movement.name} for movement in movements]
+
+            return JsonResponse({"id": training_plan.id, "name": training_plan.name, "movements": movement_list}, status=200)
+        
+        except Exception as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+    # update / edit training plan by id
+    elif request.method == 'PATCH':
+        try:
+            token = request.META.get('HTTP_AUTH_TOKEN')
+            check_token(token)
+            user = User.objects.get(token=token)
+            data = json.loads(request.body)
+            check_user_permission(user, TrainingPlan, id)
+            training_plan = TrainingPlan.objects.get(id=id)
+
+            # remove movements if provided in the request data
+            if 'movements_to_remove' in data:
+                for movement_id in data['movements_to_remove']:
+                    check_user_permission(user, Movement, movement_id)
+                    movement = Movement.objects.get(id=movement_id)
+                    training_plan.movements.remove(movement)
+
+            # add movements if provided in the request data
+            if 'movements_to_add' in data:
+                for movement_id in data['movements_to_add']:
+                    check_user_permission(user, Movement, movement_id)
+                    movement = Movement.objects.get(id=movement_id)
+                    training_plan.movements.add(movement)
+
+            training_plan.name = data.get('name')
+
+            training_plan.updated = timezone.now()
+            training_plan.save()
+
+            return JsonResponse({}, status=200)
+        
+        except Exception as e:
+            logger.error(str(e))
             return JsonResponse({}, status=404)
 
     # delete training plan
