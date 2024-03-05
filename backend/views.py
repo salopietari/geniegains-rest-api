@@ -26,12 +26,14 @@ def register(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            unit = str(data.get("unit"))
+            experience = str(data.get("experience"))
             check_registration(data)
             User.objects.create(
                 username=data.get("username"),
                 password=make_password(data.get("password")),
-                unit=data.get("unit"),
-                experience=data.get("experience"),
+                unit=unit.lower(),
+                experience=experience.lower(),
                 email=data.get("email")
             )
             return JsonResponse({}, status=200)
