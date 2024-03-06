@@ -1,5 +1,6 @@
 import json
 import time
+import uuid
 from datetime import datetime
 from datetime import timedelta
 from django.contrib.auth.hashers import make_password
@@ -61,10 +62,31 @@ def login(request):
         try:
             data = json.loads(request.body)
             check_login(data)
-
             user = User.objects.get(username=data.get("username"))
+            if user.token is None:
+                user.token = str(uuid.uuid4())
+                user.save()
             return JsonResponse({"token": user.token}, status=200) # login successful
 
+        except Exception as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+    else:
+        logger.error(f"invalid request method: {request.method}")
+        return JsonResponse({}, status=400)
+    
+@csrf_exempt
+def logout(request):
+    # logout on all devices
+    if request.method == 'POST':
+        try:
+            token = request.META.get('HTTP_AUTH_TOKEN')
+            check_token(token)
+            user = User.objects.get(token=token)
+            user.token = None
+            user.save()
+            return JsonResponse({}, status=200) # logout successful
         except Exception as e:
             logger.error(str(e))
             return JsonResponse({}, status=404)
