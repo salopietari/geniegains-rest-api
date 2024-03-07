@@ -8,6 +8,7 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.contrib.auth.hashers import *
+from django.db.models import Q
 from rest_framework import generics
 from backend.models import *
 from backend.checks import *
@@ -551,7 +552,9 @@ def movement(request):
             check_token(token)
 
             user = User.objects.get(token=token)
-            movements = Movement.objects.filter(user_id=user.id)
+            movements = Movement.objects.filter(
+                Q(user_id=user.id) | Q(experience_level=user.experience)
+            ).distinct()
 
             movement_list = [
                 { "id": movement.id, "name": movement.name}
