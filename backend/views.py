@@ -638,8 +638,8 @@ def trainingplan(request):
             movements = data.get("movements")
 
             # check permission
-            #for movement in movements:
-            #    check_user_permission(user, Movement, movement)
+            for movement in movements:
+                check_user_permission(user, Movement, movement)
 
             # create training plan
             training_plan = TrainingPlan.objects.create(user=user, name=name)

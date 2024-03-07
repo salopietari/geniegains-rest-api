@@ -92,6 +92,12 @@ def check_username(username):
     except Exception as e:
         raise Exception(e)
     
+# used to check field lengths
+# example usage:
+# check_field_length('name', tracking_name, Tracking)
+# 1. Tracking class' field name: 'name'
+# 2. Variable name: 'tracking_name'
+# 3. Models.py class: 'Tracking'
 def check_field_length(field_name, field_value, model_class):
     try:
         # Check if field is empty
@@ -106,13 +112,19 @@ def check_field_length(field_name, field_value, model_class):
     except Exception as e:
         raise Exception(e)
 
+# check that user is the owner of whatever they are trying to access
+# example usage:
+# check_user_permission(user, Tracking, item_id)
+# 1. user = User object
+# 2. Tracking = The class item_id corresponds to
+# 3. item_id = id that corresponds to a Tracking object for example
 @csrf_exempt
-def check_user_permission(object_id: models.UUIDField, object_class: models, user: User):
+def check_user_permission(user, model_class, item_id):
     try:
-        object = object_class.objects.get(uuid=object_id)
+        item = model_class.objects.get(id=item_id)
 
-        if object.user_id_id != user.uuid:
-            raise Exception(f"User is not allowed to access the object type {object_class.__name__} with id: {object_id}")
-        
+        if item.user is not None and item.user != user:
+            raise Exception(f"User is not allowed to access the {model_class.__name__.lower()}")
+
     except Exception as e:
         raise Exception(e)
