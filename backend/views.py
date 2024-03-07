@@ -602,7 +602,11 @@ def trainingplan(request):
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
             user = User.objects.get(token=token)
-            trainingplans = TrainingPlan.objects.filter(user=user)
+
+            trainingplans = TrainingPlan.objects.filter(
+                Q(user=user) | Q(experience_level=user.experience)
+            ).distinct()
+
             trainingplan_list = []
             for trainingplan in trainingplans:
                 movements_list = []
@@ -634,8 +638,8 @@ def trainingplan(request):
             movements = data.get("movements")
 
             # check permission
-            for movement in movements:
-                check_user_permission(user, Movement, movement)
+            #for movement in movements:
+            #    check_user_permission(user, Movement, movement)
 
             # create training plan
             training_plan = TrainingPlan.objects.create(user=user, name=name)
@@ -645,8 +649,7 @@ def trainingplan(request):
                 movement = Movement.objects.get(id=movement_id)
                 training_plan.movements.add(movement)
 
-
-            return JsonResponse({"id": training_plan.id}, status="200")
+            return JsonResponse({"id": training_plan.id}, status=200)
 
         except Exception as e:
             logger.error(str(e))
