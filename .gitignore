@@ -9,3 +9,8 @@ venv/
 
 #ngrok
 ngrok.py
+
+#robotframework
+log.html
+output.xml
+report.html
