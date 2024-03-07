@@ -8,12 +8,20 @@ Library           String
 ${BASE_URL}           http://localhost:8000/
 ${UNIT}               
 ${EXPERIENCE}         
+# in your db
 ${TOKEN}              
+# in your db
 ${TOKEN2}             
+# in your db
 ${USERNAME}           
-${PASSWORD}           
+# in your db
+${PASSWORD}
+           
+# not in your db
 ${EXISTING_USERNAME}  
+# not in your db
 ${REGISTER_USERNAME}  
+# not in your db
 ${REGISTER_EMAIL}     
 
 *** Test Cases ***
