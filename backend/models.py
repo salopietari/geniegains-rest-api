@@ -15,7 +15,7 @@ class User(models.Model):
     username = models.CharField(max_length=100, blank=False, null=False, unique=True, validators=[AlphanumericUsernameValidator()])
     password = models.CharField(max_length=100, blank=False, null=False)
     unit = models.CharField(max_length=10, choices=[('metric', 'Metric'), ('imperial', 'Imperial')], blank=False, null=False)
-    experience = models.CharField(max_length=20, choices=[('beginner', 'Beginner'), ('intermediate', 'Intermediate'), ('expert', 'Expert')])
+    experience = models.CharField(max_length=20, choices=[('beginner', 'Beginner'), ('intermediate', 'Intermediate'), ('expert', 'Expert')], blank=False, null=False)
     email = models.EmailField(blank=False, null=False, unique=True)
 
 class Tracking(models.Model):
@@ -28,17 +28,27 @@ class Tracking(models.Model):
 class Movement(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, to_field="id", null=True)
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, blank=False, null=False)
     experience_level = models.CharField(max_length=20, choices=[
         ('beginner', 'Beginner'),
         ('intermediate', 'Intermediate'),
         ('expert', 'Expert')
     ], null=True)
+    category = models.CharField(choices=[
+        ('triceps', 'Triceps'),
+        ('biceps', 'Biceps'),
+        ('shoulders', 'Shoulders'),
+        ('chest', 'Chest'),
+        ('back', 'Back'),
+        ('legs', 'Legs'),
+        ('core', 'Core'),
+        ('other', 'Other')
+    ], default="other")
 
 class TrainingPlan(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, to_field="id", null=True)
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, blank=False, null=False)
     movements = models.ManyToManyField(Movement)
     experience_level = models.CharField(max_length=20, choices=[
         ('beginner', 'Beginner'),
@@ -53,7 +63,7 @@ class TrainingPlanMovement(models.Model):
 class Exercise(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, to_field="id")
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, blank=False, null=False)
     created = models.DateField(default=timezone.now, editable=False)
     updated = models.DateField(default=timezone.now, editable=True)
     note = models.TextField(blank=True)
@@ -75,7 +85,7 @@ class ExerciseMovementConnection(models.Model):
 class Goal(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, to_field="id")
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, blank=False, null=False)
     number = models.DecimalField(max_digits=10, decimal_places=2)
     created = models.DateField(default=timezone.now, editable=False)
     updated = models.DateField(default=timezone.now, editable=True)
@@ -90,6 +100,6 @@ class Addition(models.Model):
     goal = models.ForeignKey(Goal, on_delete=models.CASCADE, null=True)
     created = models.DateField(default=timezone.now, editable=False)
     updated = models.DateField(default=timezone.now, editable=True)
-    number = models.DecimalField(max_digits=10, decimal_places=2)
+    number = models.DecimalField(max_digits=10, decimal_places=2, blank=False, null=False)
     unit = models.CharField(max_length=10)
     note = models.TextField(blank=True)
