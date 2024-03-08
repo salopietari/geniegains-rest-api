@@ -64,6 +64,9 @@ def login(request):
             data = json.loads(request.body)
             check_login(data)
             user = User.objects.get(username=data.get("username"))
+
+            # if user has no token, create one and return it
+            # else return the existing token
             if user.token is None:
                 user.token = str(uuid.uuid4())
                 user.save()
@@ -85,6 +88,9 @@ def logout(request):
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
             user = User.objects.get(token=token)
+
+            # set token to None to invalidate it,
+            # user will have to login again to get a new token
             user.token = None
             user.save()
             return JsonResponse({}, status=200) # logout successful
@@ -193,8 +199,11 @@ def tracking_id(request, id):
             user = User.objects.get(token=token)
             check_user_permission(user, Tracking, id)
             tracking = Tracking.objects.get(id=id)
+
+            # get all additions related to the tracking
             additions = Addition.objects.filter(tracking=tracking, user=user)
             
+            # construct a list of dictionaries representing each addition and return it
             addition_list = [{'id': addition.id,
                      'user_id': addition.user.id,
                      'tracking_id': addition.tracking.id if addition.tracking else None,
@@ -297,10 +306,12 @@ def exercise(request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
-
             user = User.objects.get(token=token)
             
+            # get all exercises for the user
             exercises = Exercise.objects.filter(user=user)
+
+            # construct a list of dictionaries representing each exercise and return it
             exercise_list = [
                 {"id": str(exercise.id), "name": exercise.name, "updated": exercise.updated}
                 for exercise in exercises
@@ -379,6 +390,7 @@ def exercise_id(request, id):
             check_user_permission(user, Exercise, id)
             check_field_length('name', data.get('name'), Exercise)
 
+            # get exercise and update it
             exercise = Exercise.objects.get(id=id)
             exercise.name = data.get('name')
             exercise.note = data.get('note')
@@ -421,10 +433,12 @@ def goal(request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
-
             user = User.objects.get(token=token)
 
+            # get all goals for the user
             goals = Goal.objects.filter(user=user)
+
+            # construct a list of dictionaries representing each goal and return it
             goal_list = [
                 {"id": str(goal.id), "name": goal.name}
                 for goal in goals
@@ -447,6 +461,7 @@ def goal(request):
 
             check_field_length('name', data.get("name"), Goal)
 
+            # convert milliseconds since the epoch to normal timestamp
             normal_timestamp = convert_unix_timestamp(data.get("end"))
             
             goal = Goal.objects.create(
@@ -509,7 +524,10 @@ def goal_id(request, id):
             check_user_permission(user, Goal, id)
             goal = Goal.objects.get(id=id)
 
+            # get all additions related to the goal
             additions = Addition.objects.filter(goal=goal, user=user)
+
+            # construct a list of dictionaries representing each addition and return it
             addition_list = [{
                 "note": addition.note, "number": addition.number, "created": int(time.mktime(addition.created.timetuple())) * 1000}
                 for addition in additions
@@ -530,6 +548,7 @@ def goal_id(request, id):
             user = User.objects.get(token=token)
             check_user_permission(user, Goal, id)
 
+            # get & delete goal
             goal = Goal.objects.get(user=user)
             goal.delete()
             
@@ -550,12 +569,14 @@ def movement(request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
-
             user = User.objects.get(token=token)
+
+            # get all movements for the user and the movements suitable for the user's experience level
             movements = Movement.objects.filter(
                 Q(user_id=user.id) | Q(experience_level=user.experience)
             ).distinct()
 
+            # construct a list of dictionaries representing each movement and return it
             movement_list = [
                 { "id": movement.id, "name": movement.name}
                 for movement in movements
@@ -603,10 +624,14 @@ def trainingplan(request):
             check_token(token)
             user = User.objects.get(token=token)
 
+            # get all training plans for the user and the training plans suitable for the user's experience level
             trainingplans = TrainingPlan.objects.filter(
                 Q(user=user) | Q(experience_level=user.experience)
             ).distinct()
 
+            # iterate through each training plan, extract its associated movements, 
+            # and construct a dictionary representing each training plan along with its movements,
+            # then append each dictionary to the trainingplan_list and return it
             trainingplan_list = []
             for trainingplan in trainingplans:
                 movements_list = []
@@ -669,8 +694,12 @@ def trainingplan_id(request, id):
             check_token(token)
             user = User.objects.get(token=token)
             check_user_permission(user, TrainingPlan, id)
+
+            # get training plan and its associated movements
             training_plan = TrainingPlan.objects.get(id=id)
             movements = training_plan.movements.all()
+
+            # construct a list of dictionaries representing each movement and return it
             movement_list = [{"id": movement.id, "name": movement.name} for movement in movements]
 
             return JsonResponse({"id": training_plan.id, "name": training_plan.name, "movements": movement_list}, status=200)
@@ -721,6 +750,8 @@ def trainingplan_id(request, id):
             check_token(token)
             user = User.objects.get(token=token)
             check_user_permission(user, TrainingPlan, id)
+
+            # get & delete training plan
             training_plan = TrainingPlan.objects.get(id=id)
             training_plan.delete()
             return JsonResponse({}, status=200)
@@ -822,8 +853,14 @@ def exercisemovementconnection_id(request, id):
             check_token(token)
             user = User.objects.get(token=token)
             check_user_permission(user, Exercise, id)
+
+            # get exercise
             exercise = Exercise.objects.get(id=id)
+            
+            # get all emcs related to the exercise
             emcs = ExerciseMovementConnection.objects.filter(exercise=exercise)
+
+            # construct a list of dictionaries representing each emc and return it
             emcs_list = [{"id": emc.id,
                           "exercise_id": emc.exercise.id,
                           "exercise_name": emc.exercise.name,
@@ -851,6 +888,8 @@ def exercisemovementconnection_id(request, id):
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
             user = User.objects.get(token=token)
+
+            # data
             data = json.loads(request.body)
             emc_id = data.get("id")
             reps = data.get("reps")
@@ -858,14 +897,19 @@ def exercisemovementconnection_id(request, id):
             video = data.get("video")
             time = data.get("time")
 
+            # check permission 
             check_user_permission(user, Exercise, id)
             check_user_permission(user, ExerciseMovementConnection, emc_id)
+
+            # get emc and exercise objects
             emc = ExerciseMovementConnection.objects.get(id=emc_id)
             exercise = Exercise.objects.get(id=id)
 
+            # update exercise
             exercise.updated = timezone.now()
             exercise.save()
 
+            # update emc
             emc.reps = reps
             emc.weight = weight
             emc.video = video
@@ -893,7 +937,6 @@ def user(request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
-
             user = User.objects.get(token=token)
             return JsonResponse({"username": user.username, "email": user.email, "unit": user.unit, "experience": user.experience}, status=200)
 
@@ -961,6 +1004,7 @@ def user(request):
         logger.error(f"invalid request method: {request.method}")
         return JsonResponse({}, status=404)
 
+# converts unix timestamp to normal date
 @csrf_exempt
 def convert_unix_timestamp(timestamp):
     try:
