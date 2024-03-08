@@ -1,5 +1,6 @@
 # GymJunkie-rest-api
-Backend for the mobile app GymJunkie
+Backend for the mobile app GymJunkie <br>
+See frontend: [GymJunkie](https://github.com/eemelimu/GymJunkie)
 ## Installation
 ### Software Requirements
 pgAdmin4 version 7.6: https://www.pgadmin.org/download/ <br>
