@@ -31,14 +31,14 @@ def register(request):
             unit = str(data.get("unit"))
             experience = str(data.get("experience"))
             check_registration(data)
-            User.objects.create(
+            user = User.objects.create(
                 username=data.get("username"),
                 password=make_password(data.get("password")),
                 unit=unit.lower(),
                 experience=experience.lower(),
                 email=data.get("email")
             )
-            return JsonResponse({}, status=200)
+            return JsonResponse({"token": user.token}, status=200)
         
         except PasswordTooShortError as e:
             logger.error(str(e))
