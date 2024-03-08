@@ -12,12 +12,12 @@ Image 1.<br>
 Image 2. <br>
 ![image](https://github.com/salopietari/gymjunkie-rest-api/assets/122457202/51578c57-5565-4928-a3a1-86ce2df38dfd) <br>
 4. (Optional but recommended) Create a virtual environment, activate it and install project dependencies: <br>
-On Windows create virtual environment: python -m venv env <br>
-On Windows activate virtual environment: env\Scripts\active
+On Windows create virtual environment: 'python -m venv env' <br>
+On Windows activate virtual environment: 'env\Scripts\active'
 5. Install project dependencies: <br>
-On Windows: pip install -r requirements.txt
+On Windows: 'pip install -r requirements.txt'
 6. Migrate django database to pgAdmin4: <br>
-python manage.py makemigrations <br>
-python manage.py migrate
+'python manage.py makemigrations' <br>
+'python manage.py migrate'
 7. Runserver: <br>
-python manage.py runserver
+'python manage.py runserver'
