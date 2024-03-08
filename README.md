@@ -19,5 +19,5 @@ On Windows: pip install -r requirements.txt
 6. Migrate django database to pgAdmin4: <br>
 python manage.py makemigrations <br>
 python manage.py migrate
-7. Runserver:
+7. Runserver: <br>
 python manage.py runserver
