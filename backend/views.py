@@ -1,6 +1,8 @@
 import json
 import time
 import uuid
+import os
+from dotenv import load_dotenv
 from datetime import datetime
 from datetime import timedelta
 from django.contrib.auth.hashers import make_password
@@ -9,12 +11,15 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.contrib.auth.hashers import *
 from django.db.models import Q
+from django.core.mail import send_mail
 from rest_framework import generics
 from backend.models import *
 from backend.checks import *
 from backend.exceptions import *
 from backend.loghandler import *
 from backend.serializers import *
+
+load_dotenv()
 
 class TrainingPlanList(generics.ListAPIView):
     serializer_class = TrainingPlanSerializer
@@ -1056,6 +1061,35 @@ def user(request):
             logger.debug(f"token: {token if 'token' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
 
+    else:
+        logger.error(f"invalid request method: {request.method}")
+        return JsonResponse({}, status=404)
+    
+@csrf_exempt
+def feedback(request):
+    if request.method == 'POST':
+        try:
+            token = request.META.get('HTTP_AUTH_TOKEN')
+            check_token(token)
+            user = User.objects.get(token=token)
+            data = json.loads(request.body)
+
+            # send email
+            email_subject = f"GymJunkie feedback"
+            email_message = f"User: {user.username}\nFeedback: {data.get('text')}"
+            send_mail(
+                email_subject,
+                email_message,
+                os.getenv("EMAIL_HOST_USER"), # sender
+                ['gymjunkiefeedback@gmail.com'], # recipient
+                fail_silently=True, # True = don't raise exception if email fails to send
+            )
+            
+            return JsonResponse({}, status=200)
+        except Exception as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
     else:
         logger.error(f"invalid request method: {request.method}")
         return JsonResponse({}, status=404)
