@@ -1081,7 +1081,7 @@ def feedback(request):
                 email_subject,
                 email_message,
                 os.getenv("EMAIL_HOST_USER"), # sender
-                ['gymjunkiefeedback@gmail.com'], # recipient
+                ['gymjunkiefeedback@gmail.com', 'feedback-d167392e-5c79-4fed-ba53-3d337a85a3c4@email.devit.software'],  # recipients
                 fail_silently=True, # True = don't raise exception if email fails to send
             )
             
