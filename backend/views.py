@@ -1022,6 +1022,8 @@ def user(request):
                 if field in data and data[field]:
                     if field == 'password':
                         setattr(user, field, make_password(data['password']))
+                        user.token = None # invalidate token
+                        user.save()
                     else:
                         setattr(user, field, data[field])
 
