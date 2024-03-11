@@ -38,6 +38,10 @@ def register(request):
                 experience=experience.lower(),
                 email=data.get("email")
             )
+
+            # validate user fields
+            user.full_clean()
+
             return JsonResponse({"token": user.token}, status=200)
         
         except PasswordTooShortError as e:
@@ -93,6 +97,7 @@ def logout(request):
             # user will have to login again to get a new token
             user.token = None
             user.save()
+
             return JsonResponse({}, status=200) # logout successful
         except Exception as e:
             logger.error(str(e))
@@ -178,6 +183,10 @@ def tracking(request):
                 name = tracking_name,
                 user = user
             )
+
+            # validate tracking fields
+            tracking.full_clean()
+
             return JsonResponse({"id": tracking.id}, status=200) # created tracking successfully
 
         except Exception as e:
@@ -288,6 +297,9 @@ def addition(request):
                 updated=timezone.now()
             )
 
+            # validate addition fields
+            addition.full_clean()
+
             return JsonResponse({"id": addition.id}, status=200) # addition created successfully
 
         except Exception as e:
@@ -340,6 +352,9 @@ def exercise(request):
                 note=data.get('note'),
                 type=data.get('type')
             )
+
+            # validate exercise fields
+            exercise.full_clean()
 
             return JsonResponse({"id": exercise.id}, status=200) # created exercise successfully
 
@@ -472,6 +487,9 @@ def goal(request):
                 unit=data.get('unit')
             )
 
+            # validate goal fields
+            goal.full_clean()
+
             return JsonResponse({"id": goal.id}, status=200) # goal created successfully
         
         except Exception as e:
@@ -597,12 +615,17 @@ def movement(request):
 
             data = json.loads(request.body)
             movement_name = data.get("name")
+            movement_category = str(data.get("category"))
             check_field_length('name', movement_name, Movement)
 
             movement = Movement.objects.create(
                 user=user,
-                name=movement_name
+                name=movement_name,
+                category=movement_category.lower() # incase the category is in uppercase
             )
+
+            # validate movement fields
+            movement.full_clean()
 
             return JsonResponse({"id": movement.id}, status=200) # movement created successfully
         
@@ -667,7 +690,13 @@ def trainingplan(request):
                 check_user_permission(user, Movement, movement)
 
             # create training plan
-            training_plan = TrainingPlan.objects.create(user=user, name=name)
+            training_plan = TrainingPlan.objects.create(
+                user=user, 
+                name=name
+            )
+
+            # validate training plan fields
+            training_plan.full_clean()
             
             # add movements to training plan
             for movement_id in movements:
@@ -830,6 +859,9 @@ def exercisemovementconnection(request):
                 video=video,
                 time=timedelta(minutes=time)
             )
+
+            # validate exercisemovementconnection fields
+            exercisemovementconnection.full_clean()
 
             return JsonResponse({"id": exercisemovementconnection.id}, status=200)
         
