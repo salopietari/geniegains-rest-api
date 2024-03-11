@@ -14,7 +14,7 @@ python version 3.11.8: https://www.python.org/downloads/
 Image 1. Create .env file here in the root of the project<br>
 ![image](https://github.com/salopietari/gymjunkie-rest-api/assets/122457202/7b66efc3-26d7-4df8-9fd8-e44ebc9a785e) <br>
 Image 2. Here are the contents of the .env file, be sure to use your own values<br>
-![image](https://github.com/salopietari/gymjunkie-rest-api/assets/122457202/51578c57-5565-4928-a3a1-86ce2df38dfd) <br>
+![image](https://github.com/salopietari/gymjunkie-rest-api/assets/122457202/f1e65f53-e421-4967-affc-737785eea599) <br>
 > [!NOTE]
 > When running project locally, SECRET_KEY variable can be anything.
 4. (Optional but recommended) Create a virtual environment and activate it<br>
@@ -36,11 +36,11 @@ How to run robotframework tests located in robot_tests/
 `python manage.py runserver`
 2. Set variables in .robot file(s) (See Image 3) <br>
 Image 3. <br>
-![Alt text](image.png)
+![image](https://github.com/salopietari/gymjunkie-rest-api/assets/122457202/04124b8f-5048-4a88-944e-3935e67d7ac4) <br>
 > [!NOTE]
 > Requires your database to actually contain valid data.
 ### Robotframework run tests
 1. Run robot test <br>
 `robot robot_tests/user.robot`
 2. See results <br>
-![Alt text](image-1.png)
+![image](https://github.com/salopietari/gymjunkie-rest-api/assets/122457202/d827ccec-422c-4d79-9b97-4217408612d9)
