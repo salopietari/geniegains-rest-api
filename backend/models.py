@@ -1,22 +1,23 @@
 import uuid
 from django.db import models
 from django.utils import timezone
-from django.contrib.auth.validators import ASCIIUsernameValidator
-from django.core.validators import MinLengthValidator
 from django.core.validators import RegexValidator
+from django.contrib.auth.models import AbstractBaseUser
 
 class AlphanumericUsernameValidator(RegexValidator):
     regex = r'^[a-zA-Z0-9]+$'
     message = 'Username must contain only letters and numbers.'
 
-class User(models.Model):
+class User(AbstractBaseUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    token = models.UUIDField(unique=True, default=uuid.uuid4, editable=True, null=True)
-    username = models.CharField(max_length=100, blank=False, null=False, unique=True, validators=[AlphanumericUsernameValidator()])
+    #token = models.CharField(max_length=255, default=uuid.uuid4, blank=True, null=True)
+    username = models.CharField(max_length=100, unique=True, validators=[AlphanumericUsernameValidator()])
     password = models.CharField(max_length=100, blank=False, null=False)
     unit = models.CharField(max_length=10, choices=[('metric', 'Metric'), ('imperial', 'Imperial')], blank=False, null=False)
     experience = models.CharField(max_length=20, choices=[('beginner', 'Beginner'), ('intermediate', 'Intermediate'), ('expert', 'Expert')], blank=False, null=False)
-    email = models.EmailField(blank=False, null=False, unique=True)
+    email = models.EmailField(unique=True, blank=False, null=False)
+    USERNAME_FIELD = 'username' # use email for authentication
+    REQUIRED_FIELDS = ['username', 'email', 'password', 'unit', 'experience']
 
 class Tracking(models.Model):
     id = models.AutoField(primary_key=True, editable=False)

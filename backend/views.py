@@ -10,14 +10,17 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.contrib.auth.hashers import *
+from django.contrib.auth import login
 from django.db.models import Q
 from django.core.mail import send_mail
 from rest_framework import generics
+from knox.models import AuthToken
 from backend.models import *
 from backend.checks import *
 from backend.exceptions import *
 from backend.loghandler import *
 from backend.serializers import *
+from backend.services import *
 
 load_dotenv()
 
@@ -33,24 +36,8 @@ def register(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            unit = str(data.get("unit"))
-            experience = str(data.get("experience"))
-            check_registration(data)
-            user = User(
-                username=data.get("username"),
-                password=make_password(data.get("password")),
-                unit=unit.lower(),
-                experience=experience.lower(),
-                email=data.get("email")
-            )
-
-            # validate user fields
-            user.full_clean()
-
-            # save user to the database
-            user.save()
-
-            return JsonResponse({"token": user.token}, status=200)
+            create_user_from_data(data)
+            return JsonResponse({}, status=200)
         
         except PasswordTooShortError as e:
             logger.error(str(e))
@@ -74,15 +61,15 @@ def login(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            check_login(data)
-            user = User.objects.get(username=data.get("username"))
-
-            # if user has no token, create one and return it
-            # else return the existing token
-            if user.token is None:
-                user.token = str(uuid.uuid4())
-                user.save()
-            return JsonResponse({"token": user.token}, status=200) # login successful
+            username = data.get('username')
+            password = data.get('password')
+            user = User.objects.get(email='knox18@gmail.com')
+            if user is not None and check_password(password, user.password):
+                user = User.objects.get(pk=user.pk)  # Reload the user object
+                print(type(user))
+                token = AuthToken.objects.create(user=user)
+                return JsonResponse({'token': token.key}, status=200)
+            return JsonResponse({}, status=400)
 
         except Exception as e:
             logger.error(str(e))
@@ -1022,6 +1009,7 @@ def user(request):
                 if field in data and data[field]:
                     if field == 'password':
                         setattr(user, field, make_password(data['password']))
+                        AuthToken.objects.filter(user=user).delete()
                     else:
                         setattr(user, field, data[field])
 
