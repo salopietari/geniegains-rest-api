@@ -33,7 +33,7 @@ class Movement(models.Model):
         ('beginner', 'Beginner'),
         ('intermediate', 'Intermediate'),
         ('expert', 'Expert')
-    ], null=True)
+    ], blank=True, null=True)
     category = models.CharField(choices=[
         ('triceps', 'Triceps'),
         ('biceps', 'Biceps'),
@@ -54,7 +54,7 @@ class TrainingPlan(models.Model):
         ('beginner', 'Beginner'),
         ('intermediate', 'Intermediate'),
         ('expert', 'Expert')
-    ], null=True)
+    ], blank=True, null=True)
 
 class TrainingPlanMovement(models.Model):
     training_plan = models.ForeignKey(TrainingPlan, on_delete=models.CASCADE)
@@ -66,8 +66,8 @@ class Exercise(models.Model):
     name = models.CharField(max_length=100, blank=False, null=False)
     created = models.DateField(default=timezone.now, editable=False)
     updated = models.DateField(default=timezone.now, editable=True)
-    note = models.TextField(blank=True)
-    type = models.CharField(max_length=100, blank=True)
+    note = models.TextField(blank=True, null=True)
+    type = models.CharField(max_length=100, blank=True, null=True)
     movement = models.ManyToManyField(Movement, through='ExerciseMovementConnection')
 
 class ExerciseMovementConnection(models.Model):
@@ -77,8 +77,8 @@ class ExerciseMovementConnection(models.Model):
     movement = models.ForeignKey(Movement, on_delete=models.CASCADE)
     created = models.DateField(default=timezone.now, editable=False)
     updated = models.DateField(default=timezone.now, editable=True)
-    reps = models.IntegerField(blank=True)
-    weight = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
+    reps = models.IntegerField(blank=True, null=True)
+    weight = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     video = models.URLField(null=True, blank=True)
     time = models.DurationField(null=True, blank=True)
 
@@ -96,10 +96,10 @@ class Goal(models.Model):
 class Addition(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, to_field="id")
-    tracking = models.ForeignKey(Tracking, on_delete=models.CASCADE, null=True)
-    goal = models.ForeignKey(Goal, on_delete=models.CASCADE, null=True)
+    tracking = models.ForeignKey(Tracking, on_delete=models.CASCADE, blank=True, null=True)
+    goal = models.ForeignKey(Goal, on_delete=models.CASCADE, blank=True, null=True)
     created = models.DateField(default=timezone.now, editable=False)
     updated = models.DateField(default=timezone.now, editable=True)
     number = models.DecimalField(max_digits=10, decimal_places=2, blank=False, null=False)
     unit = models.CharField(max_length=10)
-    note = models.TextField(blank=True)
+    note = models.TextField(blank=True, null=True)

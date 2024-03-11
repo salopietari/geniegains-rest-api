@@ -31,7 +31,7 @@ def register(request):
             unit = str(data.get("unit"))
             experience = str(data.get("experience"))
             check_registration(data)
-            user = User.objects.create(
+            user = User(
                 username=data.get("username"),
                 password=make_password(data.get("password")),
                 unit=unit.lower(),
@@ -41,6 +41,9 @@ def register(request):
 
             # validate user fields
             user.full_clean()
+
+            # save user to the database
+            user.save()
 
             return JsonResponse({"token": user.token}, status=200)
         
@@ -179,13 +182,16 @@ def tracking(request):
             user = User.objects.get(token=token)
             
             # create tracking
-            tracking = Tracking.objects.create(
+            tracking = Tracking(
                 name = tracking_name,
                 user = user
             )
 
             # validate tracking fields
             tracking.full_clean()
+
+            # save tracking to the database
+            tracking.save()
 
             return JsonResponse({"id": tracking.id}, status=200) # created tracking successfully
 
@@ -286,7 +292,7 @@ def addition(request):
                 goal = None
 
             # create addition
-            addition = Addition.objects.create(
+            addition = Addition(
                 user=user,
                 tracking=tracking,
                 goal=goal,
@@ -299,6 +305,9 @@ def addition(request):
 
             # validate addition fields
             addition.full_clean()
+
+            # save addition to the database
+            addition.save()
 
             return JsonResponse({"id": addition.id}, status=200) # addition created successfully
 
@@ -346,7 +355,7 @@ def exercise(request):
             check_field_length('name', data.get('name'), Exercise)
 
             # create exercise
-            exercise = Exercise.objects.create(
+            exercise = Exercise(
                 user=user,
                 name=data.get('name'),
                 note=data.get('note'),
@@ -355,6 +364,9 @@ def exercise(request):
 
             # validate exercise fields
             exercise.full_clean()
+
+            # save exercise to the database
+            exercise.save()
 
             return JsonResponse({"id": exercise.id}, status=200) # created exercise successfully
 
@@ -479,7 +491,7 @@ def goal(request):
             # convert milliseconds since the epoch to normal timestamp
             normal_timestamp = convert_unix_timestamp(data.get("end"))
             
-            goal = Goal.objects.create(
+            goal = Goal(
                 user=user,
                 name=data.get('name'),
                 number=data.get('number'),
@@ -489,6 +501,9 @@ def goal(request):
 
             # validate goal fields
             goal.full_clean()
+
+            # save goal to the database
+            goal.save()
 
             return JsonResponse({"id": goal.id}, status=200) # goal created successfully
         
@@ -596,7 +611,7 @@ def movement(request):
 
             # construct a list of dictionaries representing each movement and return it
             movement_list = [
-                { "id": movement.id, "name": movement.name}
+                { "id": movement.id, "name": movement.name, "category": movement.category}
                 for movement in movements
             ]
 
@@ -618,14 +633,17 @@ def movement(request):
             movement_category = str(data.get("category"))
             check_field_length('name', movement_name, Movement)
 
-            movement = Movement.objects.create(
-                user=user,
-                name=movement_name,
-                category=movement_category.lower() # incase the category is in uppercase
+            movement = Movement(
+            user=user,
+            name=movement_name,
+            category=movement_category.lower()  # Convert category to lowercase
             )
 
             # validate movement fields
             movement.full_clean()
+
+            # save movement to the database
+            movement.save()
 
             return JsonResponse({"id": movement.id}, status=200) # movement created successfully
         
@@ -690,13 +708,16 @@ def trainingplan(request):
                 check_user_permission(user, Movement, movement)
 
             # create training plan
-            training_plan = TrainingPlan.objects.create(
+            training_plan = TrainingPlan(
                 user=user, 
                 name=name
             )
 
             # validate training plan fields
             training_plan.full_clean()
+
+            # save training plan to the database
+            training_plan.save()
             
             # add movements to training plan
             for movement_id in movements:
@@ -850,7 +871,7 @@ def exercisemovementconnection(request):
             movement = Movement.objects.get(id=movement_id)
 
             # create exercisemovementconnection
-            exercisemovementconnection = ExerciseMovementConnection.objects.create(
+            exercisemovementconnection = ExerciseMovementConnection(
                 user=user,
                 exercise=exercise,
                 movement=movement,
@@ -862,6 +883,9 @@ def exercisemovementconnection(request):
 
             # validate exercisemovementconnection fields
             exercisemovementconnection.full_clean()
+
+            # save exercisemovementconnection to the database
+            exercisemovementconnection.save()
 
             return JsonResponse({"id": exercisemovementconnection.id}, status=200)
         
