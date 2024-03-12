@@ -1015,22 +1015,24 @@ def user(request):
             data = json.loads(request.body)
 
             # define fields to update
-            fields_to_update = ['email', 'username', 'password', 'unit', 'experience']
+            fields_to_update = ['email', 'username', 'unit', 'experience', 'password']
 
             # update user details based on the fields provided in the request data
             for field in fields_to_update:
                 if field in data and data[field]:
                     if field == 'password':
                         setattr(user, field, make_password(data['password']))
-                        user.token = None # invalidate token
+                        user.token = str(uuid.uuid4()) # create new token
+                        user.full_clean() # validate fields
                         user.save()
+                        return JsonResponse({"token": user.token}, status=200)
                     else:
                         setattr(user, field, data[field])
 
             # validate fields and save user
             user.full_clean()
             user.save()
-            return JsonResponse({"message": "User updated successfully"}, status=200)
+            return JsonResponse({}, status=200)
 
         
         except Exception as e:
