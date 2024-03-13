@@ -74,10 +74,8 @@ def login(request):
             password = data.get('password')
             user = CustomUser.objects.get(email=email)
             if user is not None and check_password(password, user.password):
-                user = CustomUser.objects.get(pk=user.pk)  # Reload the user object
-                print(type(user))
-                token = AuthToken.objects.create(user=user)
-                return JsonResponse({'token': token.key}, status=200)
+                token = AuthToken.objects.create(user=user)[1]
+                return JsonResponse({'token': token}, status=200)
             return JsonResponse({}, status=400)
 
         except Exception as e:
