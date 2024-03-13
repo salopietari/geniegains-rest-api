@@ -22,10 +22,10 @@ def check_registration(data):
             raise PasswordsDoNotMatchError("Passwords do not match")
         
         # already exists
-        if User.objects.filter(username=data.get("username")).exists():
+        if CustomUser.objects.filter(username=data.get("username")).exists():
             raise Exception("Username already exists")
 
-        if User.objects.filter(email=data.get("email")).exists():
+        if CustomUser.objects.filter(email=data.get("email")).exists():
             raise Exception("Email already exists")
         
     except PasswordTooShortError as e:
@@ -46,7 +46,7 @@ def check_token(token):
             raise Exception("Token is empty")
 
         # check if token corresponds to any user
-        user = User.objects.get(token=token)
+        user = CustomUser.objects.get(token=token)
     
     except Exception as e:
         raise Exception(e)
@@ -64,7 +64,7 @@ def check_login(data):
         if not password:
             raise Exception("Password is required")
 
-        user = User.objects.get(username=username)
+        user = CustomUser.objects.get(username=username)
         
         if check_password(password, user.password) is not True:
             raise Exception("Wrong password")
@@ -81,7 +81,7 @@ def check_username(username):
         if not username.isalnum():
             raise Exception("Username must contain only letters and numbers.")
         
-        user = User.objects.filter(username=username)
+        user = CustomUser.objects.filter(username=username)
 
         if user.exists():
             raise UsernameAlreadyExistsError("Username already exists")

@@ -1,12 +1,12 @@
 from django.contrib.auth.hashers import make_password
-from .models import User
+from .models import CustomUser
 
 def create_user_from_data(data):
     unit = str(data.get("unit"))
     experience = str(data.get("experience"))
     # Check registration data if necessary
     # check_registration(data)
-    user = User(
+    user = CustomUser(
         username=data.get("username"),
         password=make_password(data.get("password")),
         unit=unit.lower(),

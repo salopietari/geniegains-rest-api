@@ -61,11 +61,11 @@ def login(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            username = data.get('username')
+            email = data.get('email')
             password = data.get('password')
-            user = User.objects.get(email='knox18@gmail.com')
+            user = CustomUser.objects.get(email=email)
             if user is not None and check_password(password, user.password):
-                user = User.objects.get(pk=user.pk)  # Reload the user object
+                user = CustomUser.objects.get(pk=user.pk)  # Reload the user object
                 print(type(user))
                 token = AuthToken.objects.create(user=user)
                 return JsonResponse({'token': token.key}, status=200)
@@ -86,7 +86,7 @@ def logout(request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(token=token)
 
             # set token to None to invalidate it,
             # user will have to login again to get a new token
@@ -148,7 +148,7 @@ def tracking(request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(token=token)
 
             trackings = Tracking.objects.filter(user=user)
             tracking_list = [
@@ -171,7 +171,7 @@ def tracking(request):
             data = json.loads(request.body)
             tracking_name = data.get("tracking_name")
             check_field_length('name', tracking_name, Tracking)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(token=token)
             
             # create tracking
             tracking = Tracking(
@@ -203,7 +203,7 @@ def tracking_id(request, id):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(token=token)
             check_user_permission(user, Tracking, id)
             tracking = Tracking.objects.get(id=id)
 
@@ -235,7 +235,7 @@ def tracking_id(request, id):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(token=token)
             check_user_permission(user, Tracking, id)
 
             # get & delete tracking
@@ -258,7 +258,7 @@ def addition(request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(token=token)
             data = json.loads(request.body)
 
             # get json data
@@ -319,7 +319,7 @@ def exercise(request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(token=token)
             
             # get all exercises for the user
             exercises = Exercise.objects.filter(user=user)
@@ -341,7 +341,7 @@ def exercise(request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(token=token)
 
             data = json.loads(request.body)
             check_field_length('name', data.get('name'), Exercise)
@@ -379,7 +379,7 @@ def exercise_id(request, id):
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
 
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(token=token)
             check_user_permission(user, Exercise, id)
 
             exercise = Exercise.objects.get(id=id)
@@ -403,7 +403,7 @@ def exercise_id(request, id):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(token=token)
             data = json.loads(request.body)
 
             check_user_permission(user, Exercise, id)
@@ -428,7 +428,7 @@ def exercise_id(request, id):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(token=token)
             check_user_permission(user, Exercise, id)
 
             # get & delete exercise
@@ -452,7 +452,7 @@ def goal(request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(token=token)
 
             # get all goals for the user
             goals = Goal.objects.filter(user=user)
@@ -475,7 +475,7 @@ def goal(request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(token=token)
             data = json.loads(request.body)
 
             check_field_length('name', data.get("name"), Goal)
@@ -516,7 +516,7 @@ def goal_id(request, id):
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
 
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(token=token)
             goal = Goal.objects.get(id=id, user=user)
 
             # convert end timestamp to unix timestamp (milliseconds since the epoch)
@@ -544,7 +544,7 @@ def goal_id(request, id):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(token=token)
 
             check_user_permission(user, Goal, id)
             goal = Goal.objects.get(id=id)
@@ -570,7 +570,7 @@ def goal_id(request, id):
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
 
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(token=token)
             check_user_permission(user, Goal, id)
 
             # get & delete goal
@@ -594,7 +594,7 @@ def movement(request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(token=token)
 
             # get all movements for the user and the movements suitable for the user's experience level
             movements = Movement.objects.filter(
@@ -618,7 +618,7 @@ def movement(request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(token=token)
 
             data = json.loads(request.body)
             movement_name = data.get("name")
@@ -655,7 +655,7 @@ def trainingplan(request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(token=token)
 
             # get all training plans for the user and the training plans suitable for the user's experience level
             trainingplans = TrainingPlan.objects.filter(
@@ -688,7 +688,7 @@ def trainingplan(request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(token=token)
 
             # data
             data = json.loads(request.body)
@@ -734,7 +734,7 @@ def trainingplan_id(request, id):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(token=token)
             check_user_permission(user, TrainingPlan, id)
 
             # get training plan and its associated movements
@@ -755,7 +755,7 @@ def trainingplan_id(request, id):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(token=token)
             data = json.loads(request.body)
             check_user_permission(user, TrainingPlan, id)
             training_plan = TrainingPlan.objects.get(id=id)
@@ -790,7 +790,7 @@ def trainingplan_id(request, id):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(token=token)
             check_user_permission(user, TrainingPlan, id)
 
             # get & delete training plan
@@ -813,7 +813,7 @@ def exercisemovementconnection(request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(token=token)
             exercisemovementconnections = ExerciseMovementConnection.objects.filter(user=user)
             exercisemovementconnection_list = [
                 {"id": str(exercisemovementconnection.id),
@@ -843,7 +843,7 @@ def exercisemovementconnection(request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(token=token)
 
             # data
             data = json.loads(request.body)
@@ -899,7 +899,7 @@ def exercisemovementconnection_id(request, id):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(token=token)
             check_user_permission(user, Exercise, id)
 
             # get exercise
@@ -935,7 +935,7 @@ def exercisemovementconnection_id(request, id):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(token=token)
 
             # data
             data = json.loads(request.body)
@@ -985,7 +985,7 @@ def user(request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(token=token)
             return JsonResponse({"username": user.username, "email": user.email, "unit": user.unit, "experience": user.experience}, status=200)
 
         except Exception as e:
@@ -998,7 +998,7 @@ def user(request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(token=token)
             data = json.loads(request.body)
 
             # define fields to update
@@ -1030,7 +1030,7 @@ def user(request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(token=token)
             data = json.loads(request.body)
             password = data.get("password")
             if check_password(password, user.password):
@@ -1059,7 +1059,7 @@ def feedback(request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(token=token)
             data = json.loads(request.body)
 
             # send email
