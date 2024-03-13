@@ -2,7 +2,7 @@ import uuid
 from django.db import models
 from django.utils import timezone
 from django.core.validators import RegexValidator
-from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.contrib.auth.models import AbstractUser, BaseUserManager, PermissionsMixin, Group, Permission
 
 class AlphanumericUsernameValidator(RegexValidator):
     regex = r'^[a-zA-Z0-9]+$'
@@ -30,7 +30,7 @@ class UserManager(BaseUserManager):
             raise ValueError("Superuser must have is_superuser = True")
         return self.create_user(email, password, **extra_fields)
 
-class CustomUser(AbstractUser):
+class CustomUser(AbstractUser, PermissionsMixin):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     username = models.CharField(max_length=100, unique=True, validators=[AlphanumericUsernameValidator()])
     password = models.CharField(max_length=100, blank=False, null=False)
@@ -41,6 +41,22 @@ class CustomUser(AbstractUser):
     REQUIRED_FIELDS = ["username", "password", "unit", "experience"]
 
     objects = UserManager()
+
+    class Meta:
+        permissions = (("can_approve_posts", "Can approve posts"),)
+
+    groups = models.ManyToManyField(Group, blank=True, related_name='user_groups')
+    
+    # specify a unique related_name for the user_permissions field
+    # in order to prevent clash with the auth.User model
+    user_permissions = models.ManyToManyField(
+        Permission,
+        blank=True,
+        related_name='user_permissions_customuser'
+    )
+
+    def __str__(self):
+        return self.email
 
 class Tracking(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
