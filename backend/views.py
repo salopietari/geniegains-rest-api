@@ -24,6 +24,8 @@ from backend.services import *
 
 load_dotenv()
 
+user_manager = CustomUserManager()
+
 class TrainingPlanList(generics.ListAPIView):
     serializer_class = TrainingPlanSerializer
 
@@ -36,8 +38,15 @@ def register(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            create_user_from_data(data)
-            return JsonResponse({}, status=200)
+            user = user_manager.create_user(
+                email=data.get("email"),
+                password=data.get("password"),
+                username=data.get("username"),
+                unit=data.get("unit"),
+                experience=data.get("experience")
+            )
+            token = AuthToken.objects.create(user)[1]
+            return JsonResponse({"token": token}, status=200)
         
         except PasswordTooShortError as e:
             logger.error(str(e))

@@ -2,35 +2,23 @@ import uuid
 from django.db import models
 from django.utils import timezone
 from django.core.validators import RegexValidator
-from django.contrib.auth.models import AbstractUser, BaseUserManager, PermissionsMixin, Group, Permission
+from django.contrib.auth.models import AbstractBaseUser, UserManager,BaseUserManager, PermissionsMixin, Group, Permission
 
 class AlphanumericUsernameValidator(RegexValidator):
     regex = r'^[a-zA-Z0-9]+$'
     message = 'Username must contain only letters and numbers.'
 
-class UserManager(BaseUserManager):
+class CustomUserManager(BaseUserManager):
     def create_user(self, email, password, **extra_fields):
         if not email:
-            raise ValueError("The email is not given.")
+            raise ValueError("The Email must be set")
         email = self.normalize_email(email)
-        user = self.model(email=email, **extra_fields)
+        user = CustomUser.objects.create(email=email, **extra_fields)
         user.set_password(password)
         user.save()
         return user
-    
-    def create_superuser(self, email, password, **extra_fields):
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
-        extra_fields.setdefault('is_active', True)
 
-        if not extra_fields.get('is_staff'):
-            raise ValueError("Superuser must have is_staff = True")
-
-        if not extra_fields.get('is_superuser'):
-            raise ValueError("Superuser must have is_superuser = True")
-        return self.create_user(email, password, **extra_fields)
-
-class CustomUser(AbstractUser, PermissionsMixin):
+class CustomUser(AbstractBaseUser, PermissionsMixin):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     username = models.CharField(max_length=100, unique=True, validators=[AlphanumericUsernameValidator()])
     password = models.CharField(max_length=100, blank=False, null=False)
@@ -38,7 +26,7 @@ class CustomUser(AbstractUser, PermissionsMixin):
     experience = models.CharField(max_length=20, choices=[('beginner', 'Beginner'), ('intermediate', 'Intermediate'), ('expert', 'Expert')], blank=False, null=False)
     email = models.EmailField(unique=True, blank=False, null=False)
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ["username", "password", "unit", "experience"]
+    REQUIRED_FIELDS = ["username"]
 
     objects = UserManager()
 
