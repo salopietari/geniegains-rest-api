@@ -1,5 +1,6 @@
 from django.urls import path
 from django.contrib import admin
+from knox.views import LogoutView, LogoutAllView
 from . import views
 
 urlpatterns = [
@@ -7,7 +8,6 @@ urlpatterns = [
     path("register", views.register, name="register"),
     path("register/username", views.register_username, name="register_username"),
     path("login", views.login, name="login"),
-    path("logout", views.logout, name="logout"),
     path("token_login", views.token_login, name="token_login"),
     path("tracking", views.tracking, name="tracking"),
     path("tracking/<int:id>", views.tracking_id, name="tracking_id"),
@@ -23,4 +23,6 @@ urlpatterns = [
     path("exercisemovementconnection", views.exercisemovementconnection, name="exercisemovementconnection"),
     path("exercisemovementconnection/<int:id>", views.exercisemovementconnection_id, name="exercisemovementconnection_id"),
     path("feedback", views.feedback, name="feedback"),
+    path('logout', LogoutView.as_view()),
+    path('logout-all', LogoutAllView.as_view()),
 ]

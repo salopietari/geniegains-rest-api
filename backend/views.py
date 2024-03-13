@@ -15,6 +15,7 @@ from django.db.models import Q
 from django.core.mail import send_mail
 from rest_framework import generics
 from knox.models import AuthToken
+from knox import views as knox_views
 from backend.models import *
 from backend.checks import *
 from backend.exceptions import *
