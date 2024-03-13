@@ -11,11 +11,17 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.contrib.auth.hashers import *
 from django.contrib.auth import login
-from django.db.models import Q
+from django.db.models import Q, F
 from django.core.mail import send_mail
-from rest_framework import generics
-from knox.models import AuthToken
 from knox import views as knox_views
+from knox.models import AuthToken
+from django.contrib.auth import login
+from rest_framework import permissions
+from rest_framework.generics import RetrieveAPIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.views import APIView
+from rest_framework import generics
 from backend.models import *
 from backend.checks import *
 from backend.exceptions import *
@@ -35,8 +41,8 @@ class TrainingPlanList(generics.ListAPIView):
         return TrainingPlan.objects.filter(user=user)
 
 @csrf_exempt
-def register(request):
-    if request.method == 'POST':
+class register(APIView):
+    def post(self, request):
         try:
             data = json.loads(request.body)
             user = user_manager.create_user(
@@ -62,13 +68,10 @@ def register(request):
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
 
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=400)
-
 @csrf_exempt
-def login(request):
-    if request.method == 'POST':
+class login(APIView):
+    # login using email and password
+    def post(self, request):
         try:
             data = json.loads(request.body)
             email = data.get('email')
@@ -82,15 +85,11 @@ def login(request):
         except Exception as e:
             logger.error(str(e))
             return JsonResponse({}, status=404)
-        
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=400)
     
 @csrf_exempt
-def logout(request):
+class logout(APIView):
     # logout on all devices
-    if request.method == 'POST':
+    def post(self, request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
@@ -105,14 +104,11 @@ def logout(request):
         except Exception as e:
             logger.error(str(e))
             return JsonResponse({}, status=404)
-        
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=400)
     
 @csrf_exempt
-def token_login(request):
-    if request.method == 'POST':
+class token_login(APIView):
+    # login using token
+    def post(self, request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
@@ -121,14 +117,10 @@ def token_login(request):
         except Exception as e:
             logger.error(str(e))
             return JsonResponse({}, status=404)
-        
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=400)
      
 @csrf_exempt
-def register_username(request):
-    if request.method == 'POST':
+class register_username(APIView):
+    def post(self, request):
         try:
             data = json.loads(request.body)
             username = data.get("username")
@@ -144,15 +136,11 @@ def register_username(request):
             logger.error(str(e))
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
-        
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=400)
 
 @csrf_exempt
-def tracking(request):
+class tracking(APIView):
     # get all trackings for a user
-    if request.method == 'GET':
+    def get(self, request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
@@ -171,7 +159,7 @@ def tracking(request):
             return JsonResponse({}, status=404)
 
     # create tracking
-    elif request.method == 'POST':
+    def post(self, request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
@@ -199,15 +187,11 @@ def tracking(request):
             logger.error(str(e))
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
-
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=400)
     
 @csrf_exempt
-def tracking_id(request, id):
+class tracking_id(APIView):
     # get every addition related to one tracking (?)
-    if request.method == 'GET':
+    def get(self, request, id):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
@@ -235,11 +219,8 @@ def tracking_id(request, id):
             logger.error(str(e))
             return JsonResponse({}, status=404)
         
-    # add an addition to tracking (?)
-    elif request.method == 'POST':
-        pass
     # delete tracking by id
-    elif request.method == 'DELETE':
+    def delete(self, request, id):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
@@ -255,14 +236,11 @@ def tracking_id(request, id):
         except Exception as e:
             logger.error(str(e))
             return JsonResponse({}, status=404)
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=404)
     
 @csrf_exempt
-def addition(request):
+class addition(APIView):
     # create addition
-    if request.method == 'POST':
+    def post(self, request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
@@ -315,15 +293,11 @@ def addition(request):
             logger.error(str(e))
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
-
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=404)
     
 @csrf_exempt
-def exercise(request):
+class exercise(APIView):
     # get all exercises
-    if request.method == 'GET':
+    def get(self, request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
@@ -345,7 +319,7 @@ def exercise(request):
             return JsonResponse({}, status=404)
         
     # create exercise
-    elif request.method == 'POST':
+    def post(self, request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
@@ -375,14 +349,10 @@ def exercise(request):
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
 
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=404)
-    
 @csrf_exempt
-def exercise_id(request, id):
+class exercise_id(APIView):
     # get details of an exercise by id
-    if request.method == 'GET':
+    def get(self, request, id):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
@@ -402,12 +372,8 @@ def exercise_id(request, id):
             logger.error(str(e))
             return JsonResponse({}, status=404)
 
-    # jotain
-    elif request.method == 'POST':
-        pass
-
     # update / edit exercise by id
-    elif request.method == 'PATCH':
+    def patch(self, request, id):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
@@ -432,7 +398,7 @@ def exercise_id(request, id):
             return JsonResponse({}, status=404)
         
     # delete exercise by id
-    elif request.method == 'DELETE':
+    def delete(self, request, id):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
@@ -449,18 +415,14 @@ def exercise_id(request, id):
             logger.error(str(e))
             return JsonResponse({}, status=404)
     
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=404)
-    
 @csrf_exempt
-def goal(request):
+class goal(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
     # get all goals
-    if request.method == 'GET':
+    def get(self, request, format=None):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = CustomUser.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
 
             # get all goals for the user
             goals = Goal.objects.filter(user=user)
@@ -477,13 +439,12 @@ def goal(request):
             logger.error(str(e))
             return JsonResponse({}, status=404)
 
-
     # create goal
-    elif request.method == 'POST':
+    def post(self, request, format=None):
+        print("0.5")
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = CustomUser.objects.get(token=token)
+            print("1")
+            user = CustomUser.objects.get(email=self.request.user)
             data = json.loads(request.body)
 
             check_field_length('name', data.get("name"), Goal)
@@ -511,15 +472,11 @@ def goal(request):
             logger.error(str(e))
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
-
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=404)
     
 @csrf_exempt
-def goal_id(request, id):
+class goal_id(APIView):
     # get details of a goal by id
-    if request.method == 'GET':
+    def get(self, request, id):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
@@ -548,7 +505,7 @@ def goal_id(request, id):
             return JsonResponse({}, status=404)
 
     # get all additions regarding one goal by id
-    elif request.method == 'POST':
+    def post(self, request, id):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
@@ -573,7 +530,7 @@ def goal_id(request, id):
             return JsonResponse({}, status=404)
         
     # delete goal by id
-    elif request.method == 'DELETE':
+    def delete(self, request, id):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
@@ -590,15 +547,11 @@ def goal_id(request, id):
         except Exception as e:
             logger.error(str(e))
             return JsonResponse({}, status=404)
-
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=404)
     
 @csrf_exempt
-def movement(request):
+class movement(APIView):
     # get all movement(s)
-    if request.method == 'GET':
+    def get(self, request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
@@ -622,7 +575,7 @@ def movement(request):
             return JsonResponse({}, status=404)
 
     # create movement
-    elif request.method == 'POST':
+    def post(self, request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
@@ -651,15 +604,11 @@ def movement(request):
             logger.error(str(e))
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
-
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=404)
     
 @csrf_exempt
-def trainingplan(request):
+class trainingplan(APIView):
     # get all training plan(s)
-    if request.method == 'GET':
+    def get(self, request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
@@ -692,7 +641,7 @@ def trainingplan(request):
             return JsonResponse({}, status=404)
         
     # create training plan
-    elif request.method == 'POST':
+    def post(self, request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
@@ -731,14 +680,10 @@ def trainingplan(request):
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
         
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=404)
-        
 @csrf_exempt
-def trainingplan_id(request, id):
+class trainingplan_id(APIView):
     # get training plan by id
-    if request.method == 'GET':
+    def get(self, request, id):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
@@ -759,7 +704,7 @@ def trainingplan_id(request, id):
             return JsonResponse({}, status=404)
         
     # update / edit training plan by id
-    elif request.method == 'PATCH':
+    def patch(self, request, id):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
@@ -794,7 +739,7 @@ def trainingplan_id(request, id):
             return JsonResponse({}, status=404)
 
     # delete training plan
-    elif request.method == 'DELETE':
+    def delete(self, request, id):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
@@ -810,14 +755,10 @@ def trainingplan_id(request, id):
             logger.error(str(e))
             return JsonResponse({}, status=404)
 
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=404)
-    
 @csrf_exempt
-def exercisemovementconnection(request):
+class exercisemovementconnection(APIView):
     # get all emcs for user
-    if request.method == 'GET':
+    def get(self, request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
@@ -847,7 +788,7 @@ def exercisemovementconnection(request):
             return JsonResponse({}, status=404)
         
     # create exercisemovementconnection
-    elif request.method == 'POST':
+    def post(self, request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
@@ -894,16 +835,12 @@ def exercisemovementconnection(request):
             logger.debug(f"token: {token if 'token' in locals() else 'Not available'}")
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
-
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=404)
     
 # id is exercise id
 @csrf_exempt
-def exercisemovementconnection_id(request, id):
+class exercisemovementconnection_id(APIView):
     # get all emcs by exercise id
-    if request.method == 'GET':
+    def get(self, request, id):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
@@ -939,7 +876,7 @@ def exercisemovementconnection_id(request, id):
             return JsonResponse({}, status=404)
         
     # update / edit exercisemovementconnection by exercise id
-    elif request.method == 'PATCH':
+    def patch(self, request, id):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
@@ -982,14 +919,10 @@ def exercisemovementconnection_id(request, id):
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
 
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=404)
-    
 @csrf_exempt
-def user(request):
+class user(APIView):
     # get user details
-    if request.method == 'GET':
+    def get(self, request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
@@ -1002,7 +935,7 @@ def user(request):
             return JsonResponse({}, status=404)
         
     # update user details
-    elif request.method == 'PATCH':
+    def patch(self, request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
@@ -1034,7 +967,7 @@ def user(request):
             return JsonResponse({}, status=404)
 
     # delete user
-    elif request.method == 'DELETE':
+    def delete(self, request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
@@ -1056,14 +989,10 @@ def user(request):
             logger.error(str(e))
             logger.debug(f"token: {token if 'token' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
-
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=404)
     
 @csrf_exempt
-def feedback(request):
-    if request.method == 'POST':
+class feedback(APIView):
+    def post(self, request):
         try:
             token = request.META.get('HTTP_AUTH_TOKEN')
             check_token(token)
@@ -1086,10 +1015,6 @@ def feedback(request):
             logger.error(str(e))
             return JsonResponse({}, status=404)
         
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=404)
-
 # converts unix timestamp to normal date
 @csrf_exempt
 def convert_unix_timestamp(timestamp):
