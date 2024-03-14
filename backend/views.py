@@ -13,6 +13,7 @@ from django.contrib.auth.hashers import *
 from django.contrib.auth import login
 from django.db.models import Q, F
 from django.core.mail import send_mail
+from django.utils.decorators import method_decorator
 from knox import views as knox_views
 from knox.models import AuthToken
 from django.contrib.auth import login
@@ -40,6 +41,7 @@ class TrainingPlanList(generics.ListAPIView):
         user = self.request.user
         return TrainingPlan.objects.filter(user=user)
 
+@method_decorator(csrf_exempt, name='dispatch')
 class register(APIView):
     #register
     def post(self, request):
@@ -87,6 +89,7 @@ class register(APIView):
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
 
+@method_decorator(csrf_exempt, name='dispatch')
 class login(APIView):
     # login using email and password
     def post(self, request):
@@ -103,7 +106,8 @@ class login(APIView):
         except Exception as e:
             logger.error(str(e))
             return JsonResponse({}, status=404)
-    
+
+@method_decorator(csrf_exempt, name='dispatch') 
 class token_login(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -116,7 +120,8 @@ class token_login(APIView):
         except Exception as e:
             logger.error(str(e))
             return JsonResponse({}, status=404)
-     
+
+@method_decorator(csrf_exempt, name='dispatch')  
 class register_username(APIView):
     # check if username is available (used in registration)
     def post(self, request):
@@ -136,6 +141,7 @@ class register_username(APIView):
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
 
+@method_decorator(csrf_exempt, name='dispatch')
 class register_email(APIView):
     # check if email is available (used in registration)
     def post(self, request):
@@ -155,6 +161,7 @@ class register_email(APIView):
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
 
+@method_decorator(csrf_exempt, name='dispatch')
 class tracking(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -162,13 +169,7 @@ class tracking(APIView):
     def get(self, request):
         try:
             user = CustomUser.objects.get(email=self.request.user)
-
-            trackings = Tracking.objects.filter(user=user)
-            tracking_list = [
-                {"id": str(tracking.id), "name": tracking.name, "updated": tracking.updated}
-                for tracking in trackings
-            ]
-
+            tracking_list = get_model_data(user, Tracking)
             return JsonResponse({"tracking_list": tracking_list}, status=200)
 
         except Exception as e:
@@ -201,7 +202,8 @@ class tracking(APIView):
             logger.error(str(e))
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
-    
+
+@method_decorator(csrf_exempt, name='dispatch')  
 class tracking_id(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -246,7 +248,8 @@ class tracking_id(APIView):
         except Exception as e:
             logger.error(str(e))
             return JsonResponse({}, status=404)
-    
+
+@method_decorator(csrf_exempt, name='dispatch') 
 class addition(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -300,7 +303,8 @@ class addition(APIView):
             logger.error(str(e))
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
-    
+
+@method_decorator(csrf_exempt, name='dispatch')  
 class exercise(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -352,7 +356,8 @@ class exercise(APIView):
             logger.error(str(e))
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
-
+        
+@method_decorator(csrf_exempt, name='dispatch')
 class exercise_id(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -415,7 +420,8 @@ class exercise_id(APIView):
         except Exception as e:
             logger.error(str(e))
             return JsonResponse({}, status=404)
-    
+
+@method_decorator(csrf_exempt, name='dispatch')
 class goal(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -470,7 +476,8 @@ class goal(APIView):
             logger.error(str(e))
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
-    
+
+@method_decorator(csrf_exempt, name='dispatch')
 class goal_id(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -538,7 +545,8 @@ class goal_id(APIView):
         except Exception as e:
             logger.error(str(e))
             return JsonResponse({}, status=404)
-    
+
+@method_decorator(csrf_exempt, name='dispatch')
 class movement(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -592,7 +600,8 @@ class movement(APIView):
             logger.error(str(e))
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
-    
+
+@method_decorator(csrf_exempt, name='dispatch')
 class trainingplan(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -664,7 +673,8 @@ class trainingplan(APIView):
             logger.error(str(e))
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
-        
+
+@method_decorator(csrf_exempt, name='dispatch')
 class trainingplan_id(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -739,6 +749,7 @@ class trainingplan_id(APIView):
             logger.error(str(e))
             return JsonResponse({}, status=404)
 
+@method_decorator(csrf_exempt, name='dispatch')
 class exercisemovementconnection(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -814,7 +825,8 @@ class exercisemovementconnection(APIView):
             logger.error(str(e))
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
-    
+
+@method_decorator(csrf_exempt, name='dispatch')
 class exercisemovementconnection_id(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -892,6 +904,7 @@ class exercisemovementconnection_id(APIView):
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
 
+@method_decorator(csrf_exempt, name='dispatch')
 class user(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -958,7 +971,8 @@ class user(APIView):
         except Exception as e:
             logger.error(str(e))
             return JsonResponse({}, status=404)
-    
+
+@method_decorator(csrf_exempt, name='dispatch')
 class feedback(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
