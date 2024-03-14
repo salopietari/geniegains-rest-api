@@ -666,9 +666,13 @@ class trainingplan_id(APIView):
                     movement = Movement.objects.get(id=movement_id)
                     training_plan.movements.add(movement)
 
-            training_plan.name = data.get('name')
+            # update training plan name
+            if data.get('name'):
+                check_field_length('name', data.get('name'), TrainingPlan)
+                training_plan.name = data.get('name')
 
             training_plan.updated = timezone.now()
+            training_plan.full_clean()
             training_plan.save()
 
             return JsonResponse({}, status=200)
