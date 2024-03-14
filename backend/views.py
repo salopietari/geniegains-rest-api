@@ -912,14 +912,19 @@ class user(APIView):
             data = json.loads(request.body)
 
             # define fields to update
-            fields_to_update = ['email', 'username', 'password', 'unit', 'experience']
+            fields_to_update = ['email', 'username', 'unit', 'experience', 'password']
 
             # update user details based on the fields provided in the request data
             for field in fields_to_update:
                 if field in data and data[field]:
+                    # handle changing password
                     if field == 'password':
-                        setattr(user, field, make_password(data['password']))
-                        AuthToken.objects.filter(user=user).delete()
+                        setattr(user, field, make_password(data['password']))   # set new password
+                        AuthToken.objects.filter(user=user).delete()            # delete old token
+                        token = AuthToken.objects.create(user)[1]               # create new token
+                        user.full_clean()                                       # validate user
+                        user.save()                                             # save user
+                        return JsonResponse({"token": token}, status=200)       # password changed successfully, return new token
                     else:
                         setattr(user, field, data[field])
 
