@@ -54,7 +54,8 @@ def check_email(email: CustomUser.username) -> None:
     
 def check_field_length(field_name: models.Model.__name__, field_value: str, model_class: models.Model) -> None:
     '''
-    Check the length of field_value to make sure it doesn't exceed the max_length of the field_name in model_class
+    Check the length of field_value to make sure it doesn't exceed 
+    the max_length of the field_name in model_class
     '''
     try:
         # Check if field_value is empty
@@ -74,7 +75,7 @@ def check_field_length(field_name: models.Model.__name__, field_value: str, mode
 @csrf_exempt
 def check_user_permission(user: CustomUser, model_class: models.Model, item_id: int) -> None:
     '''
-    Check that user has permission to access the item of model_class with item_id
+    Check that user has permission to access the item of type model_class with id item_id
     '''
     try:
         # Get the item of model_class with item_id
