@@ -183,7 +183,6 @@ class tracking_id(APIView):
                      'created': addition.created,
                      'updated': addition.updated,
                      'number': str(addition.number),
-                     'unit': addition.unit,
                      'note': addition.note} for addition in additions]
             
             return JsonResponse({'addition_list': addition_list}, status=200)
@@ -221,7 +220,6 @@ class addition(APIView):
             tracking_id = data.get('tracking_id')
             goal_id = data.get('goal_id')
             number = data.get('number')
-            unit = data.get('unit')
             note = data.get('note')
 
             # if tracking_id in json data is not null get the tracking object
@@ -245,7 +243,6 @@ class addition(APIView):
                 tracking=tracking,
                 goal=goal,
                 number=number,
-                unit=unit,
                 note=note,
                 created=timezone.now(),
                 updated=timezone.now()

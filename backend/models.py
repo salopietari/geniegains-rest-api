@@ -129,5 +129,4 @@ class Addition(models.Model):
     created = models.DateField(default=timezone.now, editable=False)
     updated = models.DateField(default=timezone.now, editable=True)
     number = models.DecimalField(max_digits=10, decimal_places=2, blank=False, null=False)
-    unit = models.CharField(max_length=10)
     note = models.TextField(blank=True, null=True)
