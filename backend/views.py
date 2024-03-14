@@ -40,7 +40,6 @@ class TrainingPlanList(generics.ListAPIView):
         user = self.request.user
         return TrainingPlan.objects.filter(user=user)
 
-@csrf_exempt
 class register(APIView):
     def post(self, request):
         try:
@@ -68,7 +67,6 @@ class register(APIView):
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
 
-@csrf_exempt
 class login(APIView):
     # login using email and password
     def post(self, request):
@@ -86,7 +84,6 @@ class login(APIView):
             logger.error(str(e))
             return JsonResponse({}, status=404)
     
-@csrf_exempt
 class logout(APIView):
     # logout on all devices
     def post(self, request):
@@ -105,7 +102,6 @@ class logout(APIView):
             logger.error(str(e))
             return JsonResponse({}, status=404)
     
-@csrf_exempt
 class token_login(APIView):
     # login using token
     def post(self, request):
@@ -118,7 +114,6 @@ class token_login(APIView):
             logger.error(str(e))
             return JsonResponse({}, status=404)
      
-@csrf_exempt
 class register_username(APIView):
     def post(self, request):
         try:
@@ -137,7 +132,6 @@ class register_username(APIView):
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
 
-@csrf_exempt
 class tracking(APIView):
     # get all trackings for a user
     def get(self, request):
@@ -188,7 +182,6 @@ class tracking(APIView):
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
     
-@csrf_exempt
 class tracking_id(APIView):
     # get every addition related to one tracking (?)
     def get(self, request, id):
@@ -237,7 +230,6 @@ class tracking_id(APIView):
             logger.error(str(e))
             return JsonResponse({}, status=404)
     
-@csrf_exempt
 class addition(APIView):
     # create addition
     def post(self, request):
@@ -294,7 +286,6 @@ class addition(APIView):
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
     
-@csrf_exempt
 class exercise(APIView):
     # get all exercises
     def get(self, request):
@@ -349,7 +340,6 @@ class exercise(APIView):
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
 
-@csrf_exempt
 class exercise_id(APIView):
     # get details of an exercise by id
     def get(self, request, id):
@@ -415,13 +405,13 @@ class exercise_id(APIView):
             logger.error(str(e))
             return JsonResponse({}, status=404)
     
-@csrf_exempt
 class goal(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     # get all goals
     def get(self, request, format=None):
         try:
+            print(1)
             user = CustomUser.objects.get(email=self.request.user)
 
             # get all goals for the user
@@ -473,7 +463,6 @@ class goal(APIView):
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
     
-@csrf_exempt
 class goal_id(APIView):
     # get details of a goal by id
     def get(self, request, id):
@@ -548,7 +537,6 @@ class goal_id(APIView):
             logger.error(str(e))
             return JsonResponse({}, status=404)
     
-@csrf_exempt
 class movement(APIView):
     # get all movement(s)
     def get(self, request):
@@ -605,7 +593,6 @@ class movement(APIView):
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
     
-@csrf_exempt
 class trainingplan(APIView):
     # get all training plan(s)
     def get(self, request):
@@ -680,7 +667,6 @@ class trainingplan(APIView):
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
         
-@csrf_exempt
 class trainingplan_id(APIView):
     # get training plan by id
     def get(self, request, id):
@@ -755,7 +741,6 @@ class trainingplan_id(APIView):
             logger.error(str(e))
             return JsonResponse({}, status=404)
 
-@csrf_exempt
 class exercisemovementconnection(APIView):
     # get all emcs for user
     def get(self, request):
@@ -836,8 +821,6 @@ class exercisemovementconnection(APIView):
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
     
-# id is exercise id
-@csrf_exempt
 class exercisemovementconnection_id(APIView):
     # get all emcs by exercise id
     def get(self, request, id):
@@ -919,7 +902,6 @@ class exercisemovementconnection_id(APIView):
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
 
-@csrf_exempt
 class user(APIView):
     # get user details
     def get(self, request):
@@ -990,7 +972,6 @@ class user(APIView):
             logger.debug(f"token: {token if 'token' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
     
-@csrf_exempt
 class feedback(APIView):
     def post(self, request):
         try:
@@ -1016,7 +997,6 @@ class feedback(APIView):
             return JsonResponse({}, status=404)
         
 # converts unix timestamp to normal date
-@csrf_exempt
 def convert_unix_timestamp(timestamp):
     try:
         # divided unix timestamp by 1000
