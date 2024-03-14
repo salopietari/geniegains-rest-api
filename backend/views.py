@@ -44,13 +44,26 @@ class register(APIView):
     def post(self, request):
         try:
             data = json.loads(request.body)
-            user = user_manager.create_user(
+            # create a CustomUser object (don't save to db)
+            user = CustomUser(
                 email=data.get("email"),
                 password=data.get("password"),
                 username=data.get("username"),
                 unit=data.get("unit"),
                 experience=data.get("experience")
             )
+            
+            # validate object
+            user.full_clean()
+
+            # actually create the user
+            user = user_manager.create_user(
+                email=user.email,
+                password=user.password, 
+                username=user.username, 
+                unit=user.unit, 
+                experience=user.experience)
+            
             token = AuthToken.objects.create(user)[1]
             return JsonResponse({"token": token}, status=200)
         
@@ -59,6 +72,10 @@ class register(APIView):
             return JsonResponse({"error": str(e)}, status=404)
         
         except PasswordsDoNotMatchError as e:
+            logger.error(str(e))
+            return JsonResponse({"error": str(e)}, status=404)
+        
+        except ValueError as e:
             logger.error(str(e))
             return JsonResponse({"error": str(e)}, status=404)
 
@@ -106,6 +123,24 @@ class register_username(APIView):
             return JsonResponse({}, status=200) # username available
 
         except UsernameAlreadyExistsError as e:
+            logger.error(str(e))
+            logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
+            return JsonResponse({"error": str(e)}, status=404)
+
+        except Exception as e:
+            logger.error(str(e))
+            logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
+            return JsonResponse({}, status=404)
+
+class register_email(APIView):
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            email = data.get("email")
+            check_email(email)
+            return JsonResponse({}, status=200) # email available
+
+        except EmailAlreadyExistsError as e:
             logger.error(str(e))
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({"error": str(e)}, status=404)

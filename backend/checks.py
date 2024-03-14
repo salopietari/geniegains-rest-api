@@ -26,6 +26,23 @@ def check_username(username):
     except Exception as e:
         raise Exception(e)
     
+@csrf_exempt
+def check_email(email):
+    try:
+        if not email:
+            raise Exception("Email is required")
+        
+        user = CustomUser.objects.filter(email=email)
+
+        if user.exists():
+            raise EmailAlreadyExistsError("Email already exists")
+        
+    except EmailAlreadyExistsError as e:
+        raise EmailAlreadyExistsError(e)
+        
+    except Exception as e:
+        raise Exception(e)
+    
 # used to check field lengths
 # example usage:
 # check_field_length('name', tracking_name, Tracking)

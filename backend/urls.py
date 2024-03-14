@@ -7,8 +7,11 @@ urlpatterns = [
     path("admin", admin.site.urls),
     path("register", views.register.as_view(), name="register"),
     path("register/username", views.register_username.as_view(), name="register_username"),
+    path("register/email", views.register_email.as_view(), name="register_email"),
     path("login", views.login.as_view(), name="login"),
     path("token_login", views.token_login.as_view(), name="token_login"),
+    path('logout', LogoutView.as_view()),
+    path('logout-all', LogoutAllView.as_view()),
     path("tracking", views.tracking.as_view(), name="tracking"),
     path("tracking/<int:id>", views.tracking_id.as_view(), name="tracking_id"),
     path("addition", views.addition.as_view(), name="addition"),
@@ -23,6 +26,4 @@ urlpatterns = [
     path("exercisemovementconnection", views.exercisemovementconnection.as_view(), name="exercisemovementconnection"),
     path("exercisemovementconnection/<int:id>", views.exercisemovementconnection_id.as_view(), name="exercisemovementconnection_id"),
     path("feedback", views.feedback.as_view(), name="feedback"),
-    path('logout', LogoutView.as_view()),
-    path('logout-all', LogoutAllView.as_view()),
 ]
