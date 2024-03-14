@@ -41,9 +41,11 @@ class TrainingPlanList(generics.ListAPIView):
         return TrainingPlan.objects.filter(user=user)
 
 class register(APIView):
+    #register
     def post(self, request):
         try:
             data = json.loads(request.body)
+
             # create a CustomUser object (don't save to db)
             user = CustomUser(
                 email=data.get("email"),
@@ -56,13 +58,14 @@ class register(APIView):
             # validate object
             user.full_clean()
 
-            # actually create the user
+            # actually create the user (automatically saves it to db)
             user = user_manager.create_user(
                 email=user.email,
                 password=user.password, 
                 username=user.username, 
                 unit=user.unit, 
-                experience=user.experience)
+                experience=user.experience
+            )
             
             token = AuthToken.objects.create(user)[1]
             return JsonResponse({"token": token}, status=200)
@@ -115,6 +118,7 @@ class token_login(APIView):
             return JsonResponse({}, status=404)
      
 class register_username(APIView):
+    # check if username is available (used in registration)
     def post(self, request):
         try:
             data = json.loads(request.body)
@@ -133,6 +137,7 @@ class register_username(APIView):
             return JsonResponse({}, status=404)
 
 class register_email(APIView):
+    # check if email is available (used in registration)
     def post(self, request):
         try:
             data = json.loads(request.body)
