@@ -37,20 +37,6 @@ def check_registration(data):
     except Exception as e: 
         raise Exception(e)
     
-# used in authenticating the user
-@csrf_exempt
-def check_token(token):
-    try:
-        # check if token is empty
-        if token == "":
-            raise Exception("Token is empty")
-
-        # check if token corresponds to any user
-        user = CustomUser.objects.get(token=token)
-    
-    except Exception as e:
-        raise Exception(e)
-    
 # used when user is logging in
 @csrf_exempt
 def check_login(data):
