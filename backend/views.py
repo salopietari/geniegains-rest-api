@@ -503,6 +503,8 @@ class goal_id(APIView):
             return JsonResponse({}, status=404)
     
 class movement(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
     # get all movement(s)
     def get(self, request):
         try:
@@ -555,6 +557,8 @@ class movement(APIView):
             return JsonResponse({}, status=404)
     
 class trainingplan(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
     # get all training plan(s)
     def get(self, request):
         try:
@@ -625,6 +629,8 @@ class trainingplan(APIView):
             return JsonResponse({}, status=404)
         
 class trainingplan_id(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
     # get training plan by id
     def get(self, request, id):
         try:
@@ -697,6 +703,8 @@ class trainingplan_id(APIView):
             return JsonResponse({}, status=404)
 
 class exercisemovementconnection(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
     # get all emcs for user
     def get(self, request):
         try:
@@ -771,6 +779,8 @@ class exercisemovementconnection(APIView):
             return JsonResponse({}, status=404)
     
 class exercisemovementconnection_id(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
     # get all emcs by exercise id
     def get(self, request, id):
         try:
@@ -846,6 +856,8 @@ class exercisemovementconnection_id(APIView):
             return JsonResponse({}, status=404)
 
 class user(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
     # get user details
     def get(self, request):
         try:
@@ -906,6 +918,8 @@ class user(APIView):
             return JsonResponse({}, status=404)
     
 class feedback(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
     def post(self, request):
         try:
             user = CustomUser.objects.get(email=self.request.user)
