@@ -84,30 +84,13 @@ class login(APIView):
             logger.error(str(e))
             return JsonResponse({}, status=404)
     
-class logout(APIView):
-    # logout on all devices
-    def post(self, request):
-        try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = CustomUser.objects.get(token=token)
-
-            # set token to None to invalidate it,
-            # user will have to login again to get a new token
-            user.token = None
-            user.save()
-
-            return JsonResponse({}, status=200) # logout successful
-        except Exception as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-    
 class token_login(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
     # login using token
     def post(self, request):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
+            user = CustomUser.objects.get(email=self.request.user)
             return JsonResponse({}, status=200) # login successful
 
         except Exception as e:
@@ -133,12 +116,12 @@ class register_username(APIView):
             return JsonResponse({}, status=404)
 
 class tracking(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
     # get all trackings for a user
     def get(self, request):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = CustomUser.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
 
             trackings = Tracking.objects.filter(user=user)
             tracking_list = [
@@ -155,13 +138,10 @@ class tracking(APIView):
     # create tracking
     def post(self, request):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-
+            user = CustomUser.objects.get(email=self.request.user)
             data = json.loads(request.body)
             tracking_name = data.get("tracking_name")
             check_field_length('name', tracking_name, Tracking)
-            user = CustomUser.objects.get(token=token)
             
             # create tracking
             tracking = Tracking(
@@ -183,12 +163,12 @@ class tracking(APIView):
             return JsonResponse({}, status=404)
     
 class tracking_id(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
     # get every addition related to one tracking (?)
     def get(self, request, id):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = CustomUser.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             check_user_permission(user, Tracking, id)
             tracking = Tracking.objects.get(id=id)
 
@@ -215,9 +195,7 @@ class tracking_id(APIView):
     # delete tracking by id
     def delete(self, request, id):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = CustomUser.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             check_user_permission(user, Tracking, id)
 
             # get & delete tracking
@@ -231,12 +209,12 @@ class tracking_id(APIView):
             return JsonResponse({}, status=404)
     
 class addition(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
     # create addition
     def post(self, request):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = CustomUser.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             data = json.loads(request.body)
 
             # get json data
@@ -287,12 +265,12 @@ class addition(APIView):
             return JsonResponse({}, status=404)
     
 class exercise(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
     # get all exercises
     def get(self, request):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = CustomUser.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             
             # get all exercises for the user
             exercises = Exercise.objects.filter(user=user)
@@ -312,9 +290,7 @@ class exercise(APIView):
     # create exercise
     def post(self, request):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = CustomUser.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
 
             data = json.loads(request.body)
             check_field_length('name', data.get('name'), Exercise)
@@ -341,13 +317,12 @@ class exercise(APIView):
             return JsonResponse({}, status=404)
 
 class exercise_id(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
     # get details of an exercise by id
     def get(self, request, id):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-
-            user = CustomUser.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             check_user_permission(user, Exercise, id)
 
             exercise = Exercise.objects.get(id=id)
@@ -365,19 +340,20 @@ class exercise_id(APIView):
     # update / edit exercise by id
     def patch(self, request, id):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = CustomUser.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             data = json.loads(request.body)
 
             check_user_permission(user, Exercise, id)
-            check_field_length('name', data.get('name'), Exercise)
 
             # get exercise and update it
             exercise = Exercise.objects.get(id=id)
-            exercise.name = data.get('name')
-            exercise.note = data.get('note')
-            exercise.type = data.get('type')
+            if data.get('name'):
+                check_field_length('name', data.get('name'), Exercise)
+                exercise.name = data.get('name')
+            if data.get('note'):
+                exercise.note = data.get('note')
+            if data.get('type'):
+                exercise.type = data.get('type')
             exercise.updated = timezone.now()
             exercise.save()
 
@@ -390,9 +366,7 @@ class exercise_id(APIView):
     # delete exercise by id
     def delete(self, request, id):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = CustomUser.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             check_user_permission(user, Exercise, id)
 
             # get & delete exercise
@@ -411,7 +385,6 @@ class goal(APIView):
     # get all goals
     def get(self, request, format=None):
         try:
-            print(1)
             user = CustomUser.objects.get(email=self.request.user)
 
             # get all goals for the user
@@ -431,9 +404,7 @@ class goal(APIView):
 
     # create goal
     def post(self, request, format=None):
-        print("0.5")
         try:
-            print("1")
             user = CustomUser.objects.get(email=self.request.user)
             data = json.loads(request.body)
 
@@ -464,13 +435,12 @@ class goal(APIView):
             return JsonResponse({}, status=404)
     
 class goal_id(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
     # get details of a goal by id
     def get(self, request, id):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-
-            user = CustomUser.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             goal = Goal.objects.get(id=id, user=user)
 
             # convert end timestamp to unix timestamp (milliseconds since the epoch)
@@ -496,9 +466,7 @@ class goal_id(APIView):
     # get all additions regarding one goal by id
     def post(self, request, id):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = CustomUser.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
 
             check_user_permission(user, Goal, id)
             goal = Goal.objects.get(id=id)
@@ -521,10 +489,7 @@ class goal_id(APIView):
     # delete goal by id
     def delete(self, request, id):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-
-            user = CustomUser.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             check_user_permission(user, Goal, id)
 
             # get & delete goal
@@ -541,9 +506,7 @@ class movement(APIView):
     # get all movement(s)
     def get(self, request):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = CustomUser.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
 
             # get all movements for the user and the movements suitable for the user's experience level
             movements = Movement.objects.filter(
@@ -565,9 +528,7 @@ class movement(APIView):
     # create movement
     def post(self, request):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = CustomUser.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
 
             data = json.loads(request.body)
             movement_name = data.get("name")
@@ -597,9 +558,7 @@ class trainingplan(APIView):
     # get all training plan(s)
     def get(self, request):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = CustomUser.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
 
             # get all training plans for the user and the training plans suitable for the user's experience level
             trainingplans = TrainingPlan.objects.filter(
@@ -630,9 +589,7 @@ class trainingplan(APIView):
     # create training plan
     def post(self, request):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = CustomUser.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
 
             # data
             data = json.loads(request.body)
@@ -671,9 +628,7 @@ class trainingplan_id(APIView):
     # get training plan by id
     def get(self, request, id):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = CustomUser.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             check_user_permission(user, TrainingPlan, id)
 
             # get training plan and its associated movements
@@ -692,9 +647,7 @@ class trainingplan_id(APIView):
     # update / edit training plan by id
     def patch(self, request, id):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = CustomUser.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             data = json.loads(request.body)
             check_user_permission(user, TrainingPlan, id)
             training_plan = TrainingPlan.objects.get(id=id)
@@ -727,9 +680,7 @@ class trainingplan_id(APIView):
     # delete training plan
     def delete(self, request, id):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = CustomUser.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             check_user_permission(user, TrainingPlan, id)
 
             # get & delete training plan
@@ -745,9 +696,7 @@ class exercisemovementconnection(APIView):
     # get all emcs for user
     def get(self, request):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = CustomUser.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             exercisemovementconnections = ExerciseMovementConnection.objects.filter(user=user)
             exercisemovementconnection_list = [
                 {"id": str(exercisemovementconnection.id),
@@ -769,15 +718,12 @@ class exercisemovementconnection(APIView):
 
         except Exception as e:
             logger.error(str(e))
-            logger.debug(f"token: {token if 'token' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
         
     # create exercisemovementconnection
     def post(self, request):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = CustomUser.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
 
             # data
             data = json.loads(request.body)
@@ -817,7 +763,6 @@ class exercisemovementconnection(APIView):
         
         except Exception as e:
             logger.error(str(e))
-            logger.debug(f"token: {token if 'token' in locals() else 'Not available'}")
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
     
@@ -825,9 +770,7 @@ class exercisemovementconnection_id(APIView):
     # get all emcs by exercise id
     def get(self, request, id):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = CustomUser.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             check_user_permission(user, Exercise, id)
 
             # get exercise
@@ -854,24 +797,17 @@ class exercisemovementconnection_id(APIView):
             
         except Exception as e:
             logger.error(str(e))
-            logger.debug(f"token: {token if 'token' in locals() else 'Not available'}")
             logger.debug(f"id: {id if 'id' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
         
     # update / edit exercisemovementconnection by exercise id
     def patch(self, request, id):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = CustomUser.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
 
             # data
             data = json.loads(request.body)
             emc_id = data.get("id")
-            reps = data.get("reps")
-            weight = data.get("weight")
-            video = data.get("video")
-            time = data.get("time")
 
             # check permission 
             check_user_permission(user, Exercise, id)
@@ -886,10 +822,14 @@ class exercisemovementconnection_id(APIView):
             exercise.save()
 
             # update emc
-            emc.reps = reps
-            emc.weight = weight
-            emc.video = video
-            emc.time = timedelta(minutes=time)
+            if data.get("reps"):
+                emc.reps = data.get("reps")
+            if data.get("weight"):
+                emc.weight = data.get("weight")
+            if data.get("video"):
+                emc.video = data.get("video")
+            if data.get("time"):
+                time = data.get("time")
             emc.updated = timezone.now()
             emc.save()
 
@@ -897,7 +837,6 @@ class exercisemovementconnection_id(APIView):
         
         except Exception as e:
             logger.error(str(e))
-            logger.debug(f"token: {token if 'token' in locals() else 'Not available'}")
             logger.debug(f"id: {id if 'id' in locals() else 'Not available'}")
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
@@ -906,22 +845,17 @@ class user(APIView):
     # get user details
     def get(self, request):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = CustomUser.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             return JsonResponse({"username": user.username, "email": user.email, "unit": user.unit, "experience": user.experience}, status=200)
 
         except Exception as e:
             logger.error(str(e))
-            logger.debug(f"token: {token if 'token' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
         
     # update user details
     def patch(self, request):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = CustomUser.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             data = json.loads(request.body)
 
             # define fields to update
@@ -944,16 +878,13 @@ class user(APIView):
         
         except Exception as e:
             logger.error(str(e))
-            logger.debug(f"token: {token if 'token' in locals() else 'Not available'}")
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
 
     # delete user
     def delete(self, request):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = CustomUser.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             data = json.loads(request.body)
             password = data.get("password")
             if check_password(password, user.password):
@@ -963,21 +894,17 @@ class user(APIView):
         
         except PasswordsDoNotMatchError as e:
             logger.error(str(e))
-            logger.debug(f"token: {token if 'token' in locals() else 'Not available'}")
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({"error": "Password is incorrect"}, status=404)
         
         except Exception as e:
             logger.error(str(e))
-            logger.debug(f"token: {token if 'token' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
     
 class feedback(APIView):
     def post(self, request):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = CustomUser.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             data = json.loads(request.body)
 
             # send email
@@ -987,11 +914,11 @@ class feedback(APIView):
                 email_subject,
                 email_message,
                 os.getenv("EMAIL_HOST_USER"), # sender
-                ['gymjunkiefeedback@gmail.com', 'feedback-d167392e-5c79-4fed-ba53-3d337a85a3c4@email.devit.software'],  # recipients
+                ['gymjunkiefeedback@gmail.com', 'feedback-d167392e-5c79-4fed-ba53-3d337a85a3c4@email.devit.software'],  # recipients (gymjunkie email and discord bot)
                 fail_silently=True, # True = don't raise exception if email fails to send
             )
-            
             return JsonResponse({}, status=200)
+        
         except Exception as e:
             logger.error(str(e))
             return JsonResponse({}, status=404)
