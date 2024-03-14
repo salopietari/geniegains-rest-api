@@ -26,7 +26,8 @@ Image 2. Here are the contents of the .env file, be sure to use your own values<
 `python manage.py makemigrations` <br>
 `python manage.py migrate`
 7. Runserver <br>
-`python manage.py runserver`
+`python manage.py runserver`<br>
+8. Now you're ready to send requests
 ## Robotframework tests
 How to run robotframework tests located in robot_tests/
 > [!NOTE]
