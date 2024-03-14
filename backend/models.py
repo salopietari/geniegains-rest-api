@@ -25,6 +25,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     unit = models.CharField(max_length=10, choices=[('metric', 'Metric'), ('imperial', 'Imperial')], blank=False, null=False)
     experience = models.CharField(max_length=20, choices=[('beginner', 'Beginner'), ('intermediate', 'Intermediate'), ('expert', 'Expert')], blank=False, null=False)
     email = models.EmailField(unique=True, blank=False, null=False)
+    created = models.DateTimeField(default=timezone.now, editable=False)
+    updated = models.DateTimeField(default=timezone.now, editable=True)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ["username"]
 
@@ -57,6 +59,8 @@ class Movement(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, to_field="id", null=True)
     name = models.CharField(max_length=100, blank=False, null=False)
+    created = models.DateField(default=timezone.now, editable=False)
+    updated = models.DateField(default=timezone.now, editable=True)
     experience_level = models.CharField(max_length=20, choices=[
         ('beginner', 'Beginner'),
         ('intermediate', 'Intermediate'),
@@ -77,6 +81,8 @@ class TrainingPlan(models.Model):
     id = models.AutoField(primary_key=True, editable=False)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, to_field="id", null=True)
     name = models.CharField(max_length=100, blank=False, null=False)
+    created = models.DateField(default=timezone.now, editable=False)
+    updated = models.DateField(default=timezone.now, editable=True)
     movements = models.ManyToManyField(Movement)
     experience_level = models.CharField(max_length=20, choices=[
         ('beginner', 'Beginner'),
