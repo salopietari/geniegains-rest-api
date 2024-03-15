@@ -10,16 +10,29 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.contrib.auth.hashers import *
-from django.db.models import Q
+from django.contrib.auth import login
+from django.db.models import Q, F
 from django.core.mail import send_mail
+from django.utils.decorators import method_decorator
+from knox import views as knox_views
+from knox.models import AuthToken
+from django.contrib.auth import login
+from rest_framework import permissions
+from rest_framework.generics import RetrieveAPIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.views import APIView
 from rest_framework import generics
 from backend.models import *
 from backend.checks import *
 from backend.exceptions import *
 from backend.loghandler import *
 from backend.serializers import *
+from backend.services import *
 
 load_dotenv()
+
+user_manager = CustomUserManager()
 
 class TrainingPlanList(generics.ListAPIView):
     serializer_class = TrainingPlanSerializer
@@ -28,29 +41,36 @@ class TrainingPlanList(generics.ListAPIView):
         user = self.request.user
         return TrainingPlan.objects.filter(user=user)
 
-@csrf_exempt
-def register(request):
-    if request.method == 'POST':
+@method_decorator(csrf_exempt, name='dispatch')
+class register(APIView):
+    #register
+    def post(self, request):
         try:
             data = json.loads(request.body)
-            unit = str(data.get("unit"))
-            experience = str(data.get("experience"))
-            check_registration(data)
-            user = User(
-                username=data.get("username"),
-                password=make_password(data.get("password")),
-                unit=unit.lower(),
-                experience=experience.lower(),
-                email=data.get("email")
-            )
 
-            # validate user fields
+            # create a CustomUser object (don't save to db)
+            user = CustomUser(
+                email=data.get("email"),
+                password=data.get("password"),
+                username=data.get("username"),
+                unit=data.get("unit"),
+                experience=data.get("experience")
+            )
+            
+            # validate object
             user.full_clean()
 
-            # save user to the database
-            user.save()
-
-            return JsonResponse({"token": user.token}, status=200)
+            # actually create the user (automatically saves it to db)
+            user = user_manager.create_user(
+                email=user.email,
+                password=user.password, 
+                username=user.username, 
+                unit=user.unit, 
+                experience=user.experience
+            )
+            
+            token = AuthToken.objects.create(user)[1]
+            return JsonResponse({"token": token}, status=200)
         
         except PasswordTooShortError as e:
             logger.error(str(e))
@@ -59,81 +79,52 @@ def register(request):
         except PasswordsDoNotMatchError as e:
             logger.error(str(e))
             return JsonResponse({"error": str(e)}, status=404)
+        
+        except ValueError as e:
+            logger.error(str(e))
+            return JsonResponse({"error": str(e)}, status=404)
 
         except Exception as e:
             logger.error(str(e))
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
 
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=400)
-
-@csrf_exempt
-def login(request):
-    if request.method == 'POST':
+@method_decorator(csrf_exempt, name='dispatch')
+class login(APIView):
+    # login using email and password
+    def post(self, request):
         try:
             data = json.loads(request.body)
-            check_login(data)
-            user = User.objects.get(username=data.get("username"))
-
-            # if user has no token, create one and return it
-            # else return the existing token
-            if user.token is None:
-                user.token = str(uuid.uuid4())
-                user.save()
-            return JsonResponse({"token": user.token}, status=200) # login successful
+            email = data.get('email')
+            password = data.get('password')
+            user = CustomUser.objects.get(email=email)
+            if user is not None and check_password(password, user.password):
+                token = AuthToken.objects.create(user=user)[1]
+                return JsonResponse({'token': token}, status=200)
+            return JsonResponse({}, status=400)
 
         except Exception as e:
             logger.error(str(e))
             return JsonResponse({}, status=404)
-        
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=400)
-    
-@csrf_exempt
-def logout(request):
-    # logout on all devices
-    if request.method == 'POST':
-        try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = User.objects.get(token=token)
 
-            # set token to None to invalidate it,
-            # user will have to login again to get a new token
-            user.token = None
-            user.save()
+@method_decorator(csrf_exempt, name='dispatch') 
+class token_login(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
 
-            return JsonResponse({}, status=200) # logout successful
-        except Exception as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-        
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=400)
-    
-@csrf_exempt
-def token_login(request):
-    if request.method == 'POST':
+    # login using token
+    def post(self, request):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
+            user = CustomUser.objects.get(email=self.request.user)
             return JsonResponse({}, status=200) # login successful
 
         except Exception as e:
             logger.error(str(e))
             return JsonResponse({}, status=404)
-        
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=400)
-     
-@csrf_exempt
-def register_username(request):
-    if request.method == 'POST':
+
+@method_decorator(csrf_exempt, name='dispatch')  
+class register_username(APIView):
+    # check if username is available (used in registration)
+    def post(self, request):
         try:
             data = json.loads(request.body)
             username = data.get("username")
@@ -149,26 +140,36 @@ def register_username(request):
             logger.error(str(e))
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
-        
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=400)
 
-@csrf_exempt
-def tracking(request):
-    # get all trackings for a user
-    if request.method == 'GET':
+@method_decorator(csrf_exempt, name='dispatch')
+class register_email(APIView):
+    # check if email is available (used in registration)
+    def post(self, request):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = User.objects.get(token=token)
+            data = json.loads(request.body)
+            email = data.get("email")
+            check_email(email)
+            return JsonResponse({}, status=200) # email available
 
-            trackings = Tracking.objects.filter(user=user)
-            tracking_list = [
-                {"id": str(tracking.id), "name": tracking.name, "updated": tracking.updated}
-                for tracking in trackings
-            ]
+        except EmailAlreadyExistsError as e:
+            logger.error(str(e))
+            logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
+            return JsonResponse({"error": str(e)}, status=404)
 
+        except Exception as e:
+            logger.error(str(e))
+            logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
+            return JsonResponse({}, status=404)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class tracking(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    # get all trackings for a user
+    def get(self, request):
+        try:
+            user = CustomUser.objects.get(email=self.request.user)
+            tracking_list = get_model_data(user, Tracking)
             return JsonResponse({"tracking_list": tracking_list}, status=200)
 
         except Exception as e:
@@ -176,15 +177,12 @@ def tracking(request):
             return JsonResponse({}, status=404)
 
     # create tracking
-    elif request.method == 'POST':
+    def post(self, request):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-
+            user = CustomUser.objects.get(email=self.request.user)
             data = json.loads(request.body)
             tracking_name = data.get("tracking_name")
             check_field_length('name', tracking_name, Tracking)
-            user = User.objects.get(token=token)
             
             # create tracking
             tracking = Tracking(
@@ -205,18 +203,14 @@ def tracking(request):
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
 
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=400)
-    
-@csrf_exempt
-def tracking_id(request, id):
+@method_decorator(csrf_exempt, name='dispatch')  
+class tracking_id(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
     # get every addition related to one tracking (?)
-    if request.method == 'GET':
+    def get(self, request, id):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             check_user_permission(user, Tracking, id)
             tracking = Tracking.objects.get(id=id)
 
@@ -231,7 +225,6 @@ def tracking_id(request, id):
                      'created': addition.created,
                      'updated': addition.updated,
                      'number': str(addition.number),
-                     'unit': addition.unit,
                      'note': addition.note} for addition in additions]
             
             return JsonResponse({'addition_list': addition_list}, status=200)
@@ -240,15 +233,10 @@ def tracking_id(request, id):
             logger.error(str(e))
             return JsonResponse({}, status=404)
         
-    # add an addition to tracking (?)
-    elif request.method == 'POST':
-        pass
     # delete tracking by id
-    elif request.method == 'DELETE':
+    def delete(self, request, id):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             check_user_permission(user, Tracking, id)
 
             # get & delete tracking
@@ -260,25 +248,21 @@ def tracking_id(request, id):
         except Exception as e:
             logger.error(str(e))
             return JsonResponse({}, status=404)
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=404)
-    
-@csrf_exempt
-def addition(request):
+
+@method_decorator(csrf_exempt, name='dispatch') 
+class addition(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
     # create addition
-    if request.method == 'POST':
+    def post(self, request):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             data = json.loads(request.body)
 
             # get json data
             tracking_id = data.get('tracking_id')
             goal_id = data.get('goal_id')
             number = data.get('number')
-            unit = data.get('unit')
             note = data.get('note')
 
             # if tracking_id in json data is not null get the tracking object
@@ -302,7 +286,6 @@ def addition(request):
                 tracking=tracking,
                 goal=goal,
                 number=number,
-                unit=unit,
                 note=note,
                 created=timezone.now(),
                 updated=timezone.now()
@@ -321,18 +304,14 @@ def addition(request):
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
 
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=404)
-    
-@csrf_exempt
-def exercise(request):
+@method_decorator(csrf_exempt, name='dispatch')  
+class exercise(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
     # get all exercises
-    if request.method == 'GET':
+    def get(self, request):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             
             # get all exercises for the user
             exercises = Exercise.objects.filter(user=user)
@@ -350,11 +329,9 @@ def exercise(request):
             return JsonResponse({}, status=404)
         
     # create exercise
-    elif request.method == 'POST':
+    def post(self, request):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
 
             data = json.loads(request.body)
             check_field_length('name', data.get('name'), Exercise)
@@ -379,20 +356,15 @@ def exercise(request):
             logger.error(str(e))
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
+        
+@method_decorator(csrf_exempt, name='dispatch')
+class exercise_id(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
 
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=404)
-    
-@csrf_exempt
-def exercise_id(request, id):
     # get details of an exercise by id
-    if request.method == 'GET':
+    def get(self, request, id):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             check_user_permission(user, Exercise, id)
 
             exercise = Exercise.objects.get(id=id)
@@ -407,26 +379,23 @@ def exercise_id(request, id):
             logger.error(str(e))
             return JsonResponse({}, status=404)
 
-    # jotain
-    elif request.method == 'POST':
-        pass
-
     # update / edit exercise by id
-    elif request.method == 'PATCH':
+    def patch(self, request, id):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             data = json.loads(request.body)
 
             check_user_permission(user, Exercise, id)
-            check_field_length('name', data.get('name'), Exercise)
 
             # get exercise and update it
             exercise = Exercise.objects.get(id=id)
-            exercise.name = data.get('name')
-            exercise.note = data.get('note')
-            exercise.type = data.get('type')
+            if data.get('name'):
+                check_field_length('name', data.get('name'), Exercise)
+                exercise.name = data.get('name')
+            if data.get('note'):
+                exercise.note = data.get('note')
+            if data.get('type'):
+                exercise.type = data.get('type')
             exercise.updated = timezone.now()
             exercise.save()
 
@@ -437,11 +406,9 @@ def exercise_id(request, id):
             return JsonResponse({}, status=404)
         
     # delete exercise by id
-    elif request.method == 'DELETE':
+    def delete(self, request, id):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             check_user_permission(user, Exercise, id)
 
             # get & delete exercise
@@ -453,19 +420,15 @@ def exercise_id(request, id):
         except Exception as e:
             logger.error(str(e))
             return JsonResponse({}, status=404)
-    
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=404)
-    
-@csrf_exempt
-def goal(request):
+
+@method_decorator(csrf_exempt, name='dispatch')
+class goal(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
     # get all goals
-    if request.method == 'GET':
+    def get(self, request, format=None):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
 
             # get all goals for the user
             goals = Goal.objects.filter(user=user)
@@ -482,13 +445,10 @@ def goal(request):
             logger.error(str(e))
             return JsonResponse({}, status=404)
 
-
     # create goal
-    elif request.method == 'POST':
+    def post(self, request, format=None):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             data = json.loads(request.body)
 
             check_field_length('name', data.get("name"), Goal)
@@ -517,19 +477,14 @@ def goal(request):
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
 
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=404)
-    
-@csrf_exempt
-def goal_id(request, id):
-    # get details of a goal by id
-    if request.method == 'GET':
-        try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
+@method_decorator(csrf_exempt, name='dispatch')
+class goal_id(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
 
-            user = User.objects.get(token=token)
+    # get details of a goal by id
+    def get(self, request, id):
+        try:
+            user = CustomUser.objects.get(email=self.request.user)
             goal = Goal.objects.get(id=id, user=user)
 
             # convert end timestamp to unix timestamp (milliseconds since the epoch)
@@ -553,11 +508,9 @@ def goal_id(request, id):
             return JsonResponse({}, status=404)
 
     # get all additions regarding one goal by id
-    elif request.method == 'POST':
+    def post(self, request, id):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
 
             check_user_permission(user, Goal, id)
             goal = Goal.objects.get(id=id)
@@ -578,12 +531,9 @@ def goal_id(request, id):
             return JsonResponse({}, status=404)
         
     # delete goal by id
-    elif request.method == 'DELETE':
+    def delete(self, request, id):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             check_user_permission(user, Goal, id)
 
             # get & delete goal
@@ -596,18 +546,14 @@ def goal_id(request, id):
             logger.error(str(e))
             return JsonResponse({}, status=404)
 
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=404)
-    
-@csrf_exempt
-def movement(request):
+@method_decorator(csrf_exempt, name='dispatch')
+class movement(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
     # get all movement(s)
-    if request.method == 'GET':
+    def get(self, request):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
 
             # get all movements for the user and the movements suitable for the user's experience level
             movements = Movement.objects.filter(
@@ -627,11 +573,9 @@ def movement(request):
             return JsonResponse({}, status=404)
 
     # create movement
-    elif request.method == 'POST':
+    def post(self, request):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
 
             data = json.loads(request.body)
             movement_name = data.get("name")
@@ -657,18 +601,14 @@ def movement(request):
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
 
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=404)
-    
-@csrf_exempt
-def trainingplan(request):
+@method_decorator(csrf_exempt, name='dispatch')
+class trainingplan(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
     # get all training plan(s)
-    if request.method == 'GET':
+    def get(self, request):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
 
             # get all training plans for the user and the training plans suitable for the user's experience level
             trainingplans = TrainingPlan.objects.filter(
@@ -697,11 +637,9 @@ def trainingplan(request):
             return JsonResponse({}, status=404)
         
     # create training plan
-    elif request.method == 'POST':
+    def post(self, request):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
 
             # data
             data = json.loads(request.body)
@@ -735,19 +673,15 @@ def trainingplan(request):
             logger.error(str(e))
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
-        
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=404)
-        
-@csrf_exempt
-def trainingplan_id(request, id):
+
+@method_decorator(csrf_exempt, name='dispatch')
+class trainingplan_id(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
     # get training plan by id
-    if request.method == 'GET':
+    def get(self, request, id):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             check_user_permission(user, TrainingPlan, id)
 
             # get training plan and its associated movements
@@ -764,11 +698,9 @@ def trainingplan_id(request, id):
             return JsonResponse({}, status=404)
         
     # update / edit training plan by id
-    elif request.method == 'PATCH':
+    def patch(self, request, id):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             data = json.loads(request.body)
             check_user_permission(user, TrainingPlan, id)
             training_plan = TrainingPlan.objects.get(id=id)
@@ -787,9 +719,13 @@ def trainingplan_id(request, id):
                     movement = Movement.objects.get(id=movement_id)
                     training_plan.movements.add(movement)
 
-            training_plan.name = data.get('name')
+            # update training plan name
+            if data.get('name'):
+                check_field_length('name', data.get('name'), TrainingPlan)
+                training_plan.name = data.get('name')
 
             training_plan.updated = timezone.now()
+            training_plan.full_clean()
             training_plan.save()
 
             return JsonResponse({}, status=200)
@@ -799,11 +735,9 @@ def trainingplan_id(request, id):
             return JsonResponse({}, status=404)
 
     # delete training plan
-    elif request.method == 'DELETE':
+    def delete(self, request, id):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             check_user_permission(user, TrainingPlan, id)
 
             # get & delete training plan
@@ -815,18 +749,14 @@ def trainingplan_id(request, id):
             logger.error(str(e))
             return JsonResponse({}, status=404)
 
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=404)
-    
-@csrf_exempt
-def exercisemovementconnection(request):
+@method_decorator(csrf_exempt, name='dispatch')
+class exercisemovementconnection(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
     # get all emcs for user
-    if request.method == 'GET':
+    def get(self, request):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             exercisemovementconnections = ExerciseMovementConnection.objects.filter(user=user)
             exercisemovementconnection_list = [
                 {"id": str(exercisemovementconnection.id),
@@ -848,15 +778,12 @@ def exercisemovementconnection(request):
 
         except Exception as e:
             logger.error(str(e))
-            logger.debug(f"token: {token if 'token' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
         
     # create exercisemovementconnection
-    elif request.method == 'POST':
+    def post(self, request):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
 
             # data
             data = json.loads(request.body)
@@ -896,23 +823,17 @@ def exercisemovementconnection(request):
         
         except Exception as e:
             logger.error(str(e))
-            logger.debug(f"token: {token if 'token' in locals() else 'Not available'}")
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
 
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=404)
-    
-# id is exercise id
-@csrf_exempt
-def exercisemovementconnection_id(request, id):
+@method_decorator(csrf_exempt, name='dispatch')
+class exercisemovementconnection_id(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
     # get all emcs by exercise id
-    if request.method == 'GET':
+    def get(self, request, id):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             check_user_permission(user, Exercise, id)
 
             # get exercise
@@ -939,24 +860,17 @@ def exercisemovementconnection_id(request, id):
             
         except Exception as e:
             logger.error(str(e))
-            logger.debug(f"token: {token if 'token' in locals() else 'Not available'}")
             logger.debug(f"id: {id if 'id' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
         
     # update / edit exercisemovementconnection by exercise id
-    elif request.method == 'PATCH':
+    def patch(self, request, id):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
 
             # data
             data = json.loads(request.body)
             emc_id = data.get("id")
-            reps = data.get("reps")
-            weight = data.get("weight")
-            video = data.get("video")
-            time = data.get("time")
 
             # check permission 
             check_user_permission(user, Exercise, id)
@@ -971,10 +885,14 @@ def exercisemovementconnection_id(request, id):
             exercise.save()
 
             # update emc
-            emc.reps = reps
-            emc.weight = weight
-            emc.video = video
-            emc.time = timedelta(minutes=time)
+            if data.get("reps"):
+                emc.reps = data.get("reps")
+            if data.get("weight"):
+                emc.weight = data.get("weight")
+            if data.get("video"):
+                emc.video = data.get("video")
+            if data.get("time"):
+                time = data.get("time")
             emc.updated = timezone.now()
             emc.save()
 
@@ -982,36 +900,28 @@ def exercisemovementconnection_id(request, id):
         
         except Exception as e:
             logger.error(str(e))
-            logger.debug(f"token: {token if 'token' in locals() else 'Not available'}")
             logger.debug(f"id: {id if 'id' in locals() else 'Not available'}")
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
 
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=404)
-    
-@csrf_exempt
-def user(request):
+@method_decorator(csrf_exempt, name='dispatch')
+class user(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
     # get user details
-    if request.method == 'GET':
+    def get(self, request):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             return JsonResponse({"username": user.username, "email": user.email, "unit": user.unit, "experience": user.experience}, status=200)
 
         except Exception as e:
             logger.error(str(e))
-            logger.debug(f"token: {token if 'token' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
         
     # update user details
-    elif request.method == 'PATCH':
+    def patch(self, request):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             data = json.loads(request.body)
 
             # define fields to update
@@ -1020,33 +930,32 @@ def user(request):
             # update user details based on the fields provided in the request data
             for field in fields_to_update:
                 if field in data and data[field]:
+                    # handle changing password
                     if field == 'password':
-                        setattr(user, field, make_password(data['password']))
-                        user.token = str(uuid.uuid4()) # create new token
-                        user.full_clean() # validate fields
-                        user.save()
-                        return JsonResponse({"token": user.token}, status=200)
+                        setattr(user, field, make_password(data['password']))   # set new password
+                        AuthToken.objects.filter(user=user).delete()            # delete old token
+                        token = AuthToken.objects.create(user)[1]               # create new token
+                        user.full_clean()                                       # validate user
+                        user.save()                                             # save user
+                        return JsonResponse({"token": token}, status=200)       # password changed successfully, return new token
                     else:
                         setattr(user, field, data[field])
 
             # validate fields and save user
             user.full_clean()
             user.save()
-            return JsonResponse({}, status=200)
+            return JsonResponse({"message": "User updated successfully"}, status=200)
 
         
         except Exception as e:
             logger.error(str(e))
-            logger.debug(f"token: {token if 'token' in locals() else 'Not available'}")
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
 
     # delete user
-    elif request.method == 'DELETE':
+    def delete(self, request):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             data = json.loads(request.body)
             password = data.get("password")
             if check_password(password, user.password):
@@ -1056,26 +965,20 @@ def user(request):
         
         except PasswordsDoNotMatchError as e:
             logger.error(str(e))
-            logger.debug(f"token: {token if 'token' in locals() else 'Not available'}")
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({"error": "Password is incorrect"}, status=404)
         
         except Exception as e:
             logger.error(str(e))
-            logger.debug(f"token: {token if 'token' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
 
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=404)
-    
-@csrf_exempt
-def feedback(request):
-    if request.method == 'POST':
+@method_decorator(csrf_exempt, name='dispatch')
+class feedback(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
         try:
-            token = request.META.get('HTTP_AUTH_TOKEN')
-            check_token(token)
-            user = User.objects.get(token=token)
+            user = CustomUser.objects.get(email=self.request.user)
             data = json.loads(request.body)
 
             # send email
@@ -1085,21 +988,16 @@ def feedback(request):
                 email_subject,
                 email_message,
                 os.getenv("EMAIL_HOST_USER"), # sender
-                ['gymjunkiefeedback@gmail.com', 'feedback-d167392e-5c79-4fed-ba53-3d337a85a3c4@email.devit.software'],  # recipients
+                ['gymjunkiefeedback@gmail.com', 'feedback-d167392e-5c79-4fed-ba53-3d337a85a3c4@email.devit.software'],  # recipients (gymjunkie email and discord bot)
                 fail_silently=True, # True = don't raise exception if email fails to send
             )
-            
             return JsonResponse({}, status=200)
+        
         except Exception as e:
             logger.error(str(e))
             return JsonResponse({}, status=404)
         
-    else:
-        logger.error(f"invalid request method: {request.method}")
-        return JsonResponse({}, status=404)
-
 # converts unix timestamp to normal date
-@csrf_exempt
 def convert_unix_timestamp(timestamp):
     try:
         # divided unix timestamp by 1000
