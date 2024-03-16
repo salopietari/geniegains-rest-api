@@ -1,18 +1,31 @@
 from backend.models import *
+from django.db.models import Q
 
-def get_model_data(user: CustomUser, model_class: models.Model, **kwargs) -> list:
+def get_model_data(user: CustomUser, model: models.Model, additional_model: models.Model=None, additional_filter: dict=None) -> list:
     '''
-    Retrieve all objects of type model_class 
-    and data regarding them - return a list of dictionaries containing the data
+    Retrieve all objects of type model belonging to the user and filtered by additional_model&/filter (optional),
+    and return a list of dictionaries where each key represents an object of model, 
+    with the values of the key being the values of the object
     '''
     try:
-        objects = model_class.objects.filter(user=user)
+        # used for get all additions regarding goal / tracking
+        if additional_model is not None and additional_filter is not None:
+            objects = model.objects.filter(user=user, **additional_filter)
+        # used for get all objects of user as well as public objects (admin created)
+        elif additional_model is None and additional_filter is not None:
+            objects = model.objects.filter(Q(user=user) | Q(**additional_filter)).distinct()
+        # default case, get all objects of user
+        else:
+            objects = model.objects.filter(user=user)
+
         data_list = []
         for obj in objects:
-            data = {"id": str(obj.id), "name": obj.name, "updated": obj.updated}
-            for key, value in kwargs.items():
-                data[key] = getattr(obj, value)
-            data_list.append(data)
+            obj_data = {}
+            for field in obj._meta.fields:
+                if isinstance(field, models.ForeignKey):
+                    continue
+                obj_data[field.name] = getattr(obj, field.name)
+            data_list.append(obj_data)
         return data_list
     
     except Exception as e:

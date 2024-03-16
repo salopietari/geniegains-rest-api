@@ -212,21 +212,7 @@ class tracking_id(APIView):
         try:
             user = CustomUser.objects.get(email=self.request.user)
             check_user_permission(user, Tracking, id)
-            tracking = Tracking.objects.get(id=id)
-
-            # get all additions related to the tracking
-            additions = Addition.objects.filter(tracking=tracking, user=user)
-            
-            # construct a list of dictionaries representing each addition and return it
-            addition_list = [{'id': addition.id,
-                     'user_id': addition.user.id,
-                     'tracking_id': addition.tracking.id if addition.tracking else None,
-                     'goal_id': addition.goal.id if addition.goal else None,
-                     'created': addition.created,
-                     'updated': addition.updated,
-                     'number': str(addition.number),
-                     'note': addition.note} for addition in additions]
-            
+            addition_list = get_model_data(user, Addition, Tracking, additional_filter={"tracking": id})
             return JsonResponse({'addition_list': addition_list}, status=200)
 
         except Exception as e:
@@ -312,16 +298,7 @@ class exercise(APIView):
     def get(self, request):
         try:
             user = CustomUser.objects.get(email=self.request.user)
-            
-            # get all exercises for the user
-            exercises = Exercise.objects.filter(user=user)
-
-            # construct a list of dictionaries representing each exercise and return it
-            exercise_list = [
-                {"id": str(exercise.id), "name": exercise.name, "updated": exercise.updated}
-                for exercise in exercises
-            ]
-
+            exercise_list = get_model_data(user, Exercise)
             return JsonResponse({"exercise_list": exercise_list}, status=200)
 
         except Exception as e:
@@ -429,16 +406,7 @@ class goal(APIView):
     def get(self, request, format=None):
         try:
             user = CustomUser.objects.get(email=self.request.user)
-
-            # get all goals for the user
-            goals = Goal.objects.filter(user=user)
-
-            # construct a list of dictionaries representing each goal and return it
-            goal_list = [
-                {"id": str(goal.id), "name": goal.name}
-                for goal in goals
-            ]
-
+            goal_list = get_model_data(user, Goal)
             return JsonResponse({"goal_list": goal_list}, status=200) # got all goals successfully
         
         except Exception as e:
@@ -511,19 +479,8 @@ class goal_id(APIView):
     def post(self, request, id):
         try:
             user = CustomUser.objects.get(email=self.request.user)
-
             check_user_permission(user, Goal, id)
-            goal = Goal.objects.get(id=id)
-
-            # get all additions related to the goal
-            additions = Addition.objects.filter(goal=goal, user=user)
-
-            # construct a list of dictionaries representing each addition and return it
-            addition_list = [{
-                "note": addition.note, "number": addition.number, "created": int(time.mktime(addition.created.timetuple())) * 1000}
-                for addition in additions
-            ]
-
+            addition_list = get_model_data(user, Addition, Goal, additional_filter={"goal": id})
             return JsonResponse({"additions_list": addition_list}, status=200)
 
         except Exception as e:
@@ -554,18 +511,7 @@ class movement(APIView):
     def get(self, request):
         try:
             user = CustomUser.objects.get(email=self.request.user)
-
-            # get all movements for the user and the movements suitable for the user's experience level
-            movements = Movement.objects.filter(
-                Q(user_id=user.id) | Q(experience_level=user.experience)
-            ).distinct()
-
-            # construct a list of dictionaries representing each movement and return it
-            movement_list = [
-                { "id": movement.id, "name": movement.name, "category": movement.category}
-                for movement in movements
-            ]
-
+            movement_list = get_model_data(user, Movement, additional_filter={"experience_level": user.experience})
             return JsonResponse({"movement_list": movement_list}, status=200) # got all movements successfully
         
         except Exception as e:
@@ -754,27 +700,12 @@ class exercisemovementconnection(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     # get all emcs for user
+    # ONKS TÄÄ TURHA ENDPOINT? KÄYTETÄÄNKÖ TÄTÄ EDES FRONTENDISSÄ MISSÄÄN ???
     def get(self, request):
         try:
             user = CustomUser.objects.get(email=self.request.user)
-            exercisemovementconnections = ExerciseMovementConnection.objects.filter(user=user)
-            exercisemovementconnection_list = [
-                {"id": str(exercisemovementconnection.id),
-                 "created": exercisemovementconnection.created,
-                 "updated": exercisemovementconnection.updated,
-                 "exercise_id": exercisemovementconnection.exercise.id,
-                 "exercise_name": exercisemovementconnection.exercise.name,
-                 "movement_id": exercisemovementconnection.movement.id,
-                 "movement_name": exercisemovementconnection.movement.name,
-                 "reps": exercisemovementconnection.reps,
-                 "weight": exercisemovementconnection.weight,
-                 "video": exercisemovementconnection.video,
-                 "time" :exercisemovementconnection.time
-                 }
-                for exercisemovementconnection in exercisemovementconnections
-            ]
-
-            return JsonResponse({"exercisemovementconnection_list": exercisemovementconnection_list}, status=200)
+            emc_list = get_model_data(user, ExerciseMovementConnection)
+            return JsonResponse({"exercisemovementconnection_list": emc_list}, status=200)
 
         except Exception as e:
             logger.error(str(e))
@@ -835,27 +766,7 @@ class exercisemovementconnection_id(APIView):
         try:
             user = CustomUser.objects.get(email=self.request.user)
             check_user_permission(user, Exercise, id)
-
-            # get exercise
-            exercise = Exercise.objects.get(id=id)
-            
-            # get all emcs related to the exercise
-            emcs = ExerciseMovementConnection.objects.filter(exercise=exercise)
-
-            # construct a list of dictionaries representing each emc and return it
-            emcs_list = [{"id": emc.id,
-                          "exercise_id": emc.exercise.id,
-                          "exercise_name": emc.exercise.name,
-                          "movement_id": emc.movement.id,
-                          "movement_name": emc.movement.name,
-                          "created": emc.created,
-                          "updated": emc.updated,
-                          "reps": emc.reps,
-                          "weight": emc.weight,
-                          "video": emc.video,
-                          "time": emc.time}
-                          for emc in emcs]
-            
+            emcs_list = get_model_data(user, ExerciseMovementConnection, Exercise, additional_filter={"exercise": id})
             return JsonResponse({"emcs_list": str(emcs_list)}, status=200)
             
         except Exception as e:
