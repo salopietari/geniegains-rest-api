@@ -6,11 +6,11 @@ Library           String
 
 *** Variables ***
 ${BASE_URL}           http://localhost:8000/
-${REGISTER_USERNAME}    robotframework12
-${REGISTER_EMAIL}    robotframework12@gmail.com
-${REGISTER_PASS}    salasana123
-${REGISTER_UNIT}    metric
-${REGISTER_EXPERIENCE}    beginner
+${REGISTER_USERNAME}    
+${REGISTER_EMAIL}    
+${REGISTER_PASS}    
+${REGISTER_UNIT}    
+${REGISTER_EXPERIENCE}    
 ${TOKEN}    None
 
 *** Test Cases ***
