@@ -5,6 +5,10 @@ Library           Collections
 Library           String
 
 *** Variables ***
+# No need to touch any variables here, just run tests.
+# 1: python manage.py runserver
+# 2: robot robot_tests/user.robot
+# Tests will take care of deleting everything created during the tests.
 ${BASE_URL}           http://localhost:8000/
 ${REGISTER_USERNAME}    user234xz3f1
 ${REGISTER_EMAIL}    user234xz3f1@example.com
