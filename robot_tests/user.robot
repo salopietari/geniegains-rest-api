@@ -34,18 +34,24 @@ Login User Successfully
     Delete All Sessions
 
 Logout User Successfully
-    [Documentation]    Test logging out a user successfully
     Create Session    Logout Session    ${BASE_URL}
     ${headers}=    Create Dictionary    Content-Type=application/json    Authorization=Token ${TOKEN}
     ${response}=    POST On Session    Logout Session    /logout    headers=${headers}
     Should Be Equal As Strings    ${response.status_code}    204
     Delete All Sessions
 
-Test Register Available Username
-    [Documentation]    Test registering an available username
+Register Available Username Successfully
     Create Session    Register Session    ${BASE_URL}
     ${data}=          Create Dictionary    username=${REGISTER_USERNAME}available
     ${headers}=       Create Dictionary    Content-Type=application/json
     ${response}=      POST On Session    Register Session    register/username    json=${data}    headers=${headers}
+    Should Be Equal As Strings    ${response.status_code}    200
+    Delete All Sessions
+
+Register Available Email Successfully
+    Create Session    Register Session    ${BASE_URL}
+    ${data}=          Create Dictionary    email=${REGISTER_EMAIL}available
+    ${headers}=       Create Dictionary    Content-Type=application/json
+    ${response}=      POST On Session    Register Session    register/email    json=${data}    headers=${headers}
     Should Be Equal As Strings    ${response.status_code}    200
     Delete All Sessions
