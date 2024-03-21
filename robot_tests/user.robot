@@ -5,11 +5,14 @@ Library           Collections
 Library           String
 
 *** Variables ***
+# No need to touch any variables here, just run tests.
+# 1: python manage.py runserver
+# 2: robot robot_tests/user.robot
 ${BASE_URL}           http://localhost:8000/
 ${REGISTER_USERNAME}    user234xz3f1
 ${REGISTER_EMAIL}    user234xz3f1@example.com
 ${REGISTER_PASS}    password
-${REGISTER_UNIT}    metric    
+${REGISTER_UNIT}    metric
 ${REGISTER_EXPERIENCE}    beginner
 ${TOKEN}    None
 
