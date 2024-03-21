@@ -871,7 +871,7 @@ class user(APIView):
             password = data.get("password")
             if check_password(password, user.password):
                 user.delete()
-                return JsonResponse({}, status=200)
+                return JsonResponse({}, status=204)
             raise PasswordsDoNotMatchError("Password is incorrect")
         
         except PasswordsDoNotMatchError as e:
