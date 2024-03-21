@@ -24,4 +24,4 @@ class TrainingPlanSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ('email', 'organization', 'query_quota', 'expires')
+        fields = '__all__'
