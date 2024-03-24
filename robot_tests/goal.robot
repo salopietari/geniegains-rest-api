@@ -56,7 +56,7 @@ Get Details Of A Goal By Id
 Get All Additions Regarding One Goal By Id
     Create Session    Goal Session    ${BASE_URL}
     ${headers}=    Create Dictionary    Content-Type=application/json    Authorization=Token ${TOKEN}
-    ${response}=    POST On Session    Goal Session    /goal/${GOAL_ID}    headers=${headers}
+    ${response}=    GET On Session    Goal Session    /goal-additions/${GOAL_ID}    headers=${headers}
     Should Be Equal As Strings    ${response.status_code}    200
     Delete All Sessions
 
