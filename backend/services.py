@@ -1,4 +1,5 @@
 from backend.models import *
+from backend.checks import check_user_permission
 from django.db.models import Q
 
 def get_model_data(user: CustomUser, model: models.Model, additional_model: models.Model=None, additional_filter: dict=None) -> list:
@@ -27,6 +28,18 @@ def get_model_data(user: CustomUser, model: models.Model, additional_model: mode
                 obj_data[field.name] = getattr(obj, field.name)
             data_list.append(obj_data)
         return data_list
+    
+    except Exception as e:
+        raise Exception(e)
+
+def delete_object(user: CustomUser, model: models.Model, object_id: int) -> None:
+    '''
+    Delete the object of type model with id object_id if the user has permission to do so
+    '''
+    try:
+        obj = model.objects.get(id=object_id)
+        check_user_permission(user, model, object_id)
+        obj.delete()
     
     except Exception as e:
         raise Exception(e)
