@@ -73,16 +73,16 @@ def check_field_length(field_name: models.Model.__name__, field_value: str, mode
         raise Exception(e)
 
 @csrf_exempt
-def check_user_permission(user: CustomUser, model_class: models.Model, item_id: int) -> None:
+def check_user_permission(user: CustomUser, model_class: models.Model, object_id: int) -> None:
     '''
-    Check that user has permission to access the item of type model_class with id item_id
+    Check that user has permission to access the item of type model_class with id object_id
     '''
     try:
         # Get the item of model_class with item_id
-        item = model_class.objects.get(id=item_id)
+        object = model_class.objects.get(id=object_id)
 
         # Check if user is allowed to access the item
-        if item.user is not None and item.user != user:
+        if object.user is not None and object.user != user:
             raise Exception(f"User is not allowed to access the {model_class.__name__.lower()}")
 
     except Exception as e:
