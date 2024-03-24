@@ -474,18 +474,6 @@ class goal_id(APIView):
         except Exception as e:
             logger.error(str(e))
             return JsonResponse({}, status=404)
-
-    # get all additions regarding one goal by id
-    def post(self, request, id):
-        try:
-            user = CustomUser.objects.get(email=self.request.user)
-            check_user_permission(user, Goal, id)
-            addition_list = get_model_data(user, Addition, Goal, additional_filter={"goal": id})
-            return JsonResponse({"additions_list": addition_list}, status=200)
-
-        except Exception as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
         
     # delete goal by id
     def delete(self, request, id):
@@ -498,6 +486,22 @@ class goal_id(APIView):
             goal.delete()
             
             return JsonResponse({}, status=200) # goal deleted successfully
+
+        except Exception as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
+        
+@method_decorator(csrf_exempt, name='dispatch')
+class goal_additions_id(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    # get all additions regarding a goal by goal id
+    def get(self, request, id):
+        try:
+            user = CustomUser.objects.get(email=self.request.user)
+            check_user_permission(user, Goal, id)
+            addition_list = get_model_data(user, Addition, Goal, additional_filter={"goal": id})
+            return JsonResponse({"additions_list": addition_list}, status=200)
 
         except Exception as e:
             logger.error(str(e))
