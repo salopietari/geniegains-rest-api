@@ -11,6 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.contrib.auth.hashers import *
 from django.contrib.auth import login
+from django.contrib.auth.password_validation import validate_password
 from django.db.models import Q, F
 from django.core.mail import send_mail
 from django.utils.decorators import method_decorator
@@ -56,8 +57,11 @@ class register(APIView):
                 unit=data.get("unit"),
                 experience=data.get("experience")
             )
+
+            # validate password
+            validate_password(user.password, user)
             
-            # validate object
+            # validate all fields
             user.full_clean()
 
             # actually create the user (automatically saves it to db)
