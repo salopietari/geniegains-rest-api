@@ -1,27 +1,20 @@
 import json
 import time
-import uuid
 import os
 from dotenv import load_dotenv
-from datetime import datetime
 from datetime import timedelta
 from django.contrib.auth.hashers import make_password
-from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
 from django.contrib.auth.hashers import *
 from django.contrib.auth import login
 from django.contrib.auth.password_validation import validate_password
-from django.db.models import Q, F
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from django.db.models import Q
 from django.core.mail import send_mail
 from django.utils.decorators import method_decorator
-from knox import views as knox_views
 from knox.models import AuthToken
-from django.contrib.auth import login
 from rest_framework import permissions
-from rest_framework.generics import RetrieveAPIView
-from rest_framework.response import Response
-from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework import generics
 from backend.models import *
@@ -34,13 +27,6 @@ from backend.services import *
 load_dotenv()
 
 user_manager = CustomUserManager()
-
-class TrainingPlanList(generics.ListAPIView):
-    serializer_class = TrainingPlanSerializer
-
-    def get_queryset(self):
-        user = self.request.user
-        return TrainingPlan.objects.filter(user=user)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class register(APIView):
