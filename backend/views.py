@@ -818,6 +818,18 @@ class exercisemovementconnection_id(APIView):
             logger.debug(f"id: {id if 'id' in locals() else 'Not available'}")
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
+        
+    def delete(self, request, id):
+        try:
+            user = CustomUser.objects.get(email=self.request.user)
+            emc = ExerciseMovementConnection.objects.get(id=id)
+            check_user_permission(user, ExerciseMovementConnection, id)
+            emc.delete()
+            return JsonResponse({}, status=204)
+
+        except Exception as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class user(APIView):
