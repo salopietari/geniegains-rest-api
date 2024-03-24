@@ -223,12 +223,7 @@ class tracking_id(APIView):
     def delete(self, request, id):
         try:
             user = CustomUser.objects.get(email=self.request.user)
-            check_user_permission(user, Tracking, id)
-
-            # get & delete tracking
-            tracking_to_be_deleted = Tracking.objects.get(id=id)
-            tracking_to_be_deleted.delete()
-
+            delete_object(user, Tracking, id)
             return JsonResponse({}, status=200) # tracking deleted successfully
 
         except Exception as e:
@@ -386,12 +381,7 @@ class exercise_id(APIView):
     def delete(self, request, id):
         try:
             user = CustomUser.objects.get(email=self.request.user)
-            check_user_permission(user, Exercise, id)
-
-            # get & delete exercise
-            exercise_to_be_deleted = Exercise.objects.get(id=id)
-            exercise_to_be_deleted.delete()
-
+            delete_object(user, Exercise, id)
             return JsonResponse({}, status=200) # exercise deleted successfully
 
         except Exception as e:
@@ -479,12 +469,7 @@ class goal_id(APIView):
     def delete(self, request, id):
         try:
             user = CustomUser.objects.get(email=self.request.user)
-            check_user_permission(user, Goal, id)
-
-            # get & delete goal
-            goal = Goal.objects.get(user=user)
-            goal.delete()
-            
+            delete_object(user, Goal, id)
             return JsonResponse({}, status=200) # goal deleted successfully
 
         except Exception as e:
@@ -555,6 +540,7 @@ class movement(APIView):
 class movement_id(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
+    # delete movement by id
     def delete(self, request, id):
         try:
             user = CustomUser.objects.get(email=self.request.user)
@@ -701,11 +687,7 @@ class trainingplan_id(APIView):
     def delete(self, request, id):
         try:
             user = CustomUser.objects.get(email=self.request.user)
-            check_user_permission(user, TrainingPlan, id)
-
-            # get & delete training plan
-            training_plan = TrainingPlan.objects.get(id=id)
-            training_plan.delete()
+            delete_object(user, TrainingPlan, id)
             return JsonResponse({}, status=200)
 
         except Exception as e:
@@ -832,12 +814,11 @@ class exercisemovementconnection_id(APIView):
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
         
+    # delete emc by id
     def delete(self, request, id):
         try:
             user = CustomUser.objects.get(email=self.request.user)
-            emc = ExerciseMovementConnection.objects.get(id=id)
-            check_user_permission(user, ExerciseMovementConnection, id)
-            emc.delete()
+            delete_object(user, ExerciseMovementConnection, id)
             return JsonResponse({}, status=204)
 
         except Exception as e:
