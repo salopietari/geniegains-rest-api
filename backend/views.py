@@ -408,18 +408,22 @@ class goal(APIView):
         try:
             user = CustomUser.objects.get(email=self.request.user)
             data = json.loads(request.body)
+            goal_name = data.get("name")
+            goal_number = data.get("number")
+            goal_end = data.get("end")
+            goal_unit = data.get("unit")
 
-            check_field_length('name', data.get("name"), Goal)
+            check_field_length('name', goal_name, Goal)
 
-            # convert milliseconds since the epoch to normal timestamp
-            normal_timestamp = convert_unix_timestamp(data.get("end"))
+            # convert end timestamp to normal date string
+            normal_timestamp = convert_unix_time_to_normal(goal_end)
             
             goal = Goal(
                 user=user,
-                name=data.get('name'),
-                number=data.get('number'),
+                name=goal_name,
+                number=goal_number,
                 end=normal_timestamp,
-                unit=data.get('unit')
+                unit=goal_unit
             )
 
             # validate goal fields
@@ -917,15 +921,3 @@ class feedback(APIView):
         except Exception as e:
             logger.error(str(e))
             return JsonResponse({}, status=404)
-        
-# converts unix timestamp to normal date
-def convert_unix_timestamp(timestamp):
-    try:
-        # divided unix timestamp by 1000
-        timestamp /= 1000
-        # convert unix time stamp to datetime object
-        normal_date = datetime.fromtimestamp(timestamp)
-        return normal_date
-    
-    except Exception as e:
-        raise Exception(e)

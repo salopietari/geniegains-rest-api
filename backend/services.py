@@ -1,6 +1,7 @@
 from backend.models import *
 from backend.checks import check_user_permission
 from django.db.models import Q
+from datetime import datetime
 
 def get_model_data(user: CustomUser, model: models.Model, additional_model: models.Model=None, additional_filter: dict=None) -> list:
     '''
@@ -40,6 +41,20 @@ def delete_object(user: CustomUser, model: models.Model, object_id: int) -> None
         obj = model.objects.get(id=object_id)
         check_user_permission(user, model, object_id)
         obj.delete()
+    
+    except Exception as e:
+        raise Exception(e)
+    
+def convert_unix_time_to_normal(seconds: int) -> str:
+    '''
+    Convert a unix timestamp (seconds that have elapsed since the Unix epoch, 
+    which is defined as 00:00:00 UTC on January 1, 1970, not counting leap seconds) 
+    to a normal date string
+    '''
+    try:
+        normal_date = seconds/1000
+        normal_date = datetime.fromtimestamp(normal_date)
+        return normal_date
     
     except Exception as e:
         raise Exception(e)
