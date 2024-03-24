@@ -186,7 +186,6 @@ class tracking(APIView):
             user = CustomUser.objects.get(email=self.request.user)
             data = json.loads(request.body)
             tracking_name = data.get("tracking_name")
-            check_field_length('name', tracking_name, Tracking)
             
             # create tracking
             tracking = Tracking(
@@ -310,7 +309,6 @@ class exercise(APIView):
             user = CustomUser.objects.get(email=self.request.user)
 
             data = json.loads(request.body)
-            check_field_length('name', data.get('name'), Exercise)
 
             # create exercise
             exercise = Exercise(
@@ -366,7 +364,6 @@ class exercise_id(APIView):
             # get exercise and update it
             exercise = Exercise.objects.get(id=id)
             if data.get('name'):
-                check_field_length('name', data.get('name'), Exercise)
                 exercise.name = data.get('name')
             if data.get('note'):
                 exercise.note = data.get('note')
@@ -416,8 +413,6 @@ class goal(APIView):
             goal_number = data.get("number")
             goal_end = data.get("end")
             goal_unit = data.get("unit")
-
-            check_field_length('name', goal_name, Goal)
 
             # convert end timestamp to normal date string
             normal_timestamp = convert_unix_time_to_normal(goal_end)
@@ -523,7 +518,6 @@ class movement(APIView):
             data = json.loads(request.body)
             movement_name = data.get("name")
             movement_category = str(data.get("category"))
-            check_field_length('name', movement_name, Movement)
 
             movement = Movement(
             user=user,
@@ -678,7 +672,6 @@ class trainingplan_id(APIView):
 
             # update training plan name
             if data.get('name'):
-                check_field_length('name', data.get('name'), TrainingPlan)
                 training_plan.name = data.get('name')
 
             training_plan.updated = timezone.now()

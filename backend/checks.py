@@ -51,26 +51,6 @@ def check_email(email: CustomUser.username) -> None:
         
     except Exception as e:
         raise Exception(e)
-    
-def check_field_length(field_name: models.Model.__name__, field_value: str, model_class: models.Model) -> None:
-    '''
-    Check the length of field_value to make sure it doesn't exceed 
-    the max_length of the field_name in model_class
-    '''
-    try:
-        # Check if field_value is empty
-        if not field_value:
-            raise Exception(f"{field_name} is required")
-        
-        # Get max_length of field_name in model_class
-        max_length = model_class._meta.get_field(field_name).max_length
-
-        # Check if field_value exceeds max_length
-        if len(field_value) > max_length:
-            raise Exception(f"{field_name} exceeds maximum length of: {max_length}")
-        
-    except Exception as e:
-        raise Exception(e)
 
 @csrf_exempt
 def check_user_permission(user: CustomUser, model_class: models.Model, object_id: int) -> None:
