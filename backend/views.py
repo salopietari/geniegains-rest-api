@@ -550,6 +550,19 @@ class movement(APIView):
             logger.error(str(e))
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
+        
+@method_decorator(csrf_exempt, name='dispatch')
+class movement_id(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def delete(self, request, id):
+        try:
+            user = CustomUser.objects.get(email=self.request.user)
+            delete_object(user, Movement, id)
+            return JsonResponse({}, status=204)
+        except Exception as e:
+            logger.error(str(e))
+            return JsonResponse({}, status=404)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class trainingplan(APIView):

@@ -22,6 +22,7 @@ urlpatterns = [
     path("goal-additions/<int:id>", views.goal_additions_id.as_view(), name="goal_additions_id"),
     path("user", views.user.as_view(), name="user"),
     path("movement", views.movement.as_view(), name="movement"),
+    path("movement/<int:id>", views.movement_id.as_view(), name="movement_id"),
     path("trainingplan", views.trainingplan.as_view(), name="trainingplan"),
     path("trainingplan/<int:id>", views.trainingplan_id.as_view(), name="trainingplan_id"),
     path("exercisemovementconnection", views.exercisemovementconnection.as_view(), name="exercisemovementconnection"),
