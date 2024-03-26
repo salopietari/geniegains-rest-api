@@ -1,7 +1,7 @@
 import uuid
 from django.db import models
 from django.utils import timezone
-from django.core.validators import RegexValidator
+from django.core.validators import RegexValidator, MaxValueValidator
 from django.contrib.auth.models import AbstractBaseUser, UserManager,BaseUserManager, PermissionsMixin, Group, Permission
 
 class AlphanumericUsernameValidator(RegexValidator):
@@ -41,6 +41,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False, editable=False)
     created = models.DateTimeField(default=timezone.now, editable=False)
     updated = models.DateTimeField(default=timezone.now, editable=True)
+    query_quota = models.IntegerField(default=10, blank=False, null=False, validators=[MaxValueValidator(10)])
+    last_query = models.DateTimeField(default=timezone.now, editable=False)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ["username"]
 

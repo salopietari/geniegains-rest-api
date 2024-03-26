@@ -1,10 +1,10 @@
 from django.contrib.auth import authenticate
 from django.views.decorators.csrf import csrf_exempt
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from django.contrib.auth.hashers import check_password
 from backend.models import *
 from backend.exceptions import *
-from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from backend.loghandler import *
-from django.contrib.auth.hashers import check_password
     
 @csrf_exempt
 def check_username(username: CustomUser.username) -> None:
@@ -65,5 +65,22 @@ def check_user_permission(user: CustomUser, model_class: models.Model, object_id
         if object.user is not None and object.user != user:
             raise Exception(f"User is not allowed to access the {model_class.__name__.lower()}")
 
+    except Exception as e:
+        raise Exception(e)
+    
+@csrf_exempt
+def check_user_query_quota(user: CustomUser) -> None:
+    from backend.services import reset_query_quota
+    '''
+    Check if user has queries left for today
+    '''
+    try:
+        reset_query_quota(user)
+        if user.query_quota < 1:
+            raise QueryQuotaExceededError("Daily query quota exceeded")
+        
+    except QueryQuotaExceededError as e:
+        raise QueryQuotaExceededError(e)
+    
     except Exception as e:
         raise Exception(e)

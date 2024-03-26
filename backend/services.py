@@ -58,3 +58,29 @@ def convert_unix_time_to_normal(seconds: int) -> str:
     
     except Exception as e:
         raise Exception(e)
+    
+def reset_query_quota(user: CustomUser) -> None:
+    '''
+    Reset user's query quota to the defined default in models.py 
+    if the last query was not made today
+    '''
+    try:
+        if user.last_query.date() < timezone.now().date():
+            user.query_quota = user._meta.get_field('query_quota').default
+            user.save()
+
+    except Exception as e:
+        raise Exception(e)
+    
+def decrement_query_quota(user: CustomUser) -> None:
+    '''
+    Decrement user's query quota by 1
+    and update the last query to the current time
+    '''
+    try:
+        user.query_quota -= 1
+        user.last_query = timezone.now()
+        user.save()
+
+    except Exception as e:
+        raise Exception(e)

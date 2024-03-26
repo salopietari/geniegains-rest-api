@@ -28,4 +28,5 @@ urlpatterns = [
     path("exercisemovementconnection", views.exercisemovementconnection.as_view(), name="exercisemovementconnection"),
     path("exercisemovementconnection/<int:id>", views.exercisemovementconnection_id.as_view(), name="exercisemovementconnection_id"),
     path("feedback", views.feedback.as_view(), name="feedback"),
+    path("question", views.question.as_view(), name="question"),
 ]

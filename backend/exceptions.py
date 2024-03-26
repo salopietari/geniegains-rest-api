@@ -9,3 +9,6 @@ class UsernameAlreadyExistsError(Exception):
 
 class EmailAlreadyExistsError(Exception):
     pass
+
+class QueryQuotaExceededError(Exception):
+    pass
