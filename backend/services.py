@@ -1,6 +1,7 @@
 from backend.models import *
 from backend.checks import check_user_permission
 from django.db.models import Q
+from django.db import transaction
 from datetime import datetime
 
 def get_model_data(user: CustomUser, model: models.Model, additional_model: models.Model=None, additional_filter: dict=None) -> list:
@@ -30,6 +31,24 @@ def get_model_data(user: CustomUser, model: models.Model, additional_model: mode
             data_list.append(obj_data)
         return data_list
     
+    except Exception as e:
+        raise Exception(e)
+    
+def create_object(user: CustomUser, model: models.Model, data: dict[str: any]) -> models.Model:
+    '''
+    Create an object of type model with the data provided
+    '''
+    try:
+        object = model(**data)
+        object.user = user
+        object.full_clean()
+        with transaction.atomic():
+            object = model.objects.create(
+                user=user,
+                **data)
+            object.save()
+        return object
+
     except Exception as e:
         raise Exception(e)
 

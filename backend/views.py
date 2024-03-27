@@ -178,20 +178,7 @@ class tracking(APIView):
         try:
             user = CustomUser.objects.get(email=self.request.user)
             data = json.loads(request.body)
-            tracking_name = data.get("tracking_name")
-            
-            # create tracking
-            tracking = Tracking(
-                name = tracking_name,
-                user = user
-            )
-
-            # validate tracking fields
-            tracking.full_clean()
-
-            # save tracking to the database
-            tracking.save()
-
+            tracking = create_object(user, Tracking, data)
             return JsonResponse({"id": tracking.id}, status=200) # created tracking successfully
 
         except Exception as e:
@@ -235,12 +222,8 @@ class addition(APIView):
         try:
             user = CustomUser.objects.get(email=self.request.user)
             data = json.loads(request.body)
-
-            # get json data
             tracking_id = data.get('tracking_id')
             goal_id = data.get('goal_id')
-            number = data.get('number')
-            note = data.get('note')
 
             # if tracking_id in json data is not null get the tracking object
             # else tracking will be null
@@ -257,22 +240,7 @@ class addition(APIView):
             else:
                 goal = None
 
-            # create addition
-            addition = Addition(
-                user=user,
-                tracking=tracking,
-                goal=goal,
-                number=number,
-                note=note,
-                created=timezone.now(),
-                updated=timezone.now()
-            )
-
-            # validate addition fields
-            addition.full_clean()
-
-            # save addition to the database
-            addition.save()
+            addition = create_object(user, Addition, data)
 
             return JsonResponse({"id": addition.id}, status=200) # addition created successfully
 
@@ -300,23 +268,8 @@ class exercise(APIView):
     def post(self, request):
         try:
             user = CustomUser.objects.get(email=self.request.user)
-
             data = json.loads(request.body)
-
-            # create exercise
-            exercise = Exercise(
-                user=user,
-                name=data.get('name'),
-                note=data.get('note'),
-                type=data.get('type')
-            )
-
-            # validate exercise fields
-            exercise.full_clean()
-
-            # save exercise to the database
-            exercise.save()
-
+            exercise = create_object(user, Exercise, data)
             return JsonResponse({"id": exercise.id}, status=200) # created exercise successfully
 
         except Exception as e:
@@ -402,28 +355,11 @@ class goal(APIView):
         try:
             user = CustomUser.objects.get(email=self.request.user)
             data = json.loads(request.body)
-            goal_name = data.get("name")
-            goal_number = data.get("number")
-            goal_end = data.get("end")
-            goal_unit = data.get("unit")
-
-            # convert end timestamp to normal date string
-            normal_timestamp = convert_unix_time_to_normal(goal_end)
             
-            goal = Goal(
-                user=user,
-                name=goal_name,
-                number=goal_number,
-                end=normal_timestamp,
-                unit=goal_unit
-            )
-
-            # validate goal fields
-            goal.full_clean()
-
-            # save goal to the database
-            goal.save()
-
+            # convert end timestamp to normal date string
+            normal_timestamp = convert_unix_time_to_normal(data.get("end"))
+            data["end"] = normal_timestamp
+            goal = create_object(user, Goal, data)
             return JsonResponse({"id": goal.id}, status=200) # goal created successfully
         
         except Exception as e:
