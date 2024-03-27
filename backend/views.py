@@ -424,23 +424,8 @@ class movement(APIView):
     def post(self, request):
         try:
             user = CustomUser.objects.get(email=self.request.user)
-
             data = json.loads(request.body)
-            movement_name = data.get("name")
-            movement_category = str(data.get("category"))
-
-            movement = Movement(
-            user=user,
-            name=movement_name,
-            category=movement_category.lower()  # Convert category to lowercase
-            )
-
-            # validate movement fields
-            movement.full_clean()
-
-            # save movement to the database
-            movement.save()
-
+            movement = create_object(user, Movement, data)
             return JsonResponse({"id": movement.id}, status=200) # movement created successfully
         
         except Exception as e:
@@ -504,24 +489,14 @@ class trainingplan(APIView):
 
             # data
             data = json.loads(request.body)
-            name = data.get("name")
             movements = data.get("movements")
+            del data["movements"]
 
-            # check permission
+            # check permission for each movement
             for movement in movements:
                 check_user_permission(user, Movement, movement)
 
-            # create training plan
-            training_plan = TrainingPlan(
-                user=user, 
-                name=name
-            )
-
-            # validate training plan fields
-            training_plan.full_clean()
-
-            # save training plan to the database
-            training_plan.save()
+            training_plan = create_object(user, TrainingPlan, data)
             
             # add movements to training plan
             for movement_id in movements:
@@ -630,37 +605,14 @@ class exercisemovementconnection(APIView):
             data = json.loads(request.body)
             exercise_id = data.get("exercise_id")
             movement_id = data.get("movement_id")
-            reps = data.get("reps")
-            weight = data.get("weight")
-            video = data.get("video")
-            time = data.get("time")
+            data["time"] = timedelta(minutes=data.get("time"))
 
-            # check permission
             check_user_permission(user, Exercise, exercise_id)
             check_user_permission(user, Movement, movement_id)
 
-            # get exercise and movement objects
-            exercise = Exercise.objects.get(id=exercise_id)
-            movement = Movement.objects.get(id=movement_id)
+            emc = create_object(user, ExerciseMovementConnection, data)
 
-            # create exercisemovementconnection
-            exercisemovementconnection = ExerciseMovementConnection(
-                user=user,
-                exercise=exercise,
-                movement=movement,
-                reps=reps,
-                weight=weight,
-                video=video,
-                time=timedelta(minutes=time)
-            )
-
-            # validate exercisemovementconnection fields
-            exercisemovementconnection.full_clean()
-
-            # save exercisemovementconnection to the database
-            exercisemovementconnection.save()
-
-            return JsonResponse({"id": exercisemovementconnection.id}, status=200)
+            return JsonResponse({"id": emc.id}, status=200)
         
         except Exception as e:
             logger.error(str(e))
