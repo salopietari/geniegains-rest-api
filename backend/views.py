@@ -222,26 +222,7 @@ class addition(APIView):
         try:
             user = CustomUser.objects.get(email=self.request.user)
             data = json.loads(request.body)
-            tracking_id = data.get('tracking_id')
-            goal_id = data.get('goal_id')
-
-            # if tracking_id in json data is not null get the tracking object
-            # else tracking will be null
-            if tracking_id:
-                check_user_permission(user, Tracking, tracking_id)
-                tracking = Tracking.objects.get(id=tracking_id)
-            else:
-                tracking = None
-
-            # same for goal_id
-            if goal_id:
-                check_user_permission(user, Goal, goal_id)
-                goal = Goal.objects.get(id=goal_id)
-            else:
-                goal = None
-
             addition = create_object(user, Addition, data)
-
             return JsonResponse({"id": addition.id}, status=200) # addition created successfully
 
         except Exception as e:
