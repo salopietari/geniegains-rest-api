@@ -32,7 +32,7 @@ Register User Successfully
 
 Create Tracking
     Create Session    Tracking Session    ${BASE_URL}
-    ${data}=    Create Dictionary    tracking_name="Steps"
+    ${data}=    Create Dictionary    name="Steps"
     ${headers}=     Create Dictionary    Authorization=Token ${TOKEN}
     ${response}=    POST On Session    Tracking Session    /tracking    json=${data}    headers=${headers}
     Should Be Equal As Strings    ${response.status_code}    200

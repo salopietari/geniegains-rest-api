@@ -38,7 +38,7 @@ Get All Trackings
 
 Create Tracking
     Create Session    Tracking Session    ${BASE_URL}
-    ${data}=    Create Dictionary    tracking_name="Paino"
+    ${data}=    Create Dictionary    name="Paino"
     ${headers}=     Create Dictionary    Authorization=Token ${TOKEN}
     ${response}=    POST On Session    Tracking Session    /tracking    json=${data}    headers=${headers}
     Should Be Equal As Strings    ${response.status_code}    200
