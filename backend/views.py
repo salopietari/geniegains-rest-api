@@ -83,7 +83,6 @@ class register(APIView):
 
         except Exception as e:
             logger.error(str(e))
-            logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
             return JsonResponse({}, status=404)
 
 @method_decorator(csrf_exempt, name='dispatch')

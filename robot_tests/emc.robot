@@ -68,6 +68,28 @@ Create Emc
     Set Global Variable    ${EMC_ID}
     Delete All Sessions
 
+Get All Emcs By Exercise Id
+    Create Session    Emc Session    ${BASE_URL}
+    ${headers}=    Create Dictionary    Authorization=Token ${TOKEN}
+    ${response}=    GET On Session    Emc Session    /exercisemovementconnection/${EXERCISE_ID}    headers=${headers}
+    Should Be Equal As Strings    ${response.status_code}    200
+    Delete All Sessions
+
+Edit Emcs By Exercise Id
+    Create Session    Emc Session    ${BASE_URL}
+    ${headers}=    Create Dictionary    Authorization=Token ${TOKEN}
+    ${data}=    Create Dictionary    id=${EMC_ID}    reps=${1}    weight=${1}    time=${1}
+    ${response}=    PATCH On Session    Emc Session    /exercisemovementconnection/${EXERCISE_ID}    json=${data}    headers=${headers}
+    Should Be Equal As Strings    ${response.status_code}    200
+    Delete All Sessions
+
+Delete Emc
+    Create Session    Emc Session    ${BASE_URL}
+    ${headers}=    Create Dictionary    Authorization=Token ${TOKEN}
+    ${response}=    DELETE On Session    Emc Session    /exercisemovementconnection/${EMC_ID}    headers=${headers}
+    Should Be Equal As Strings    ${response.status_code}    204
+    Delete All Sessions
+
 Delete User
     Create Session    Delete Session    ${BASE_URL}
     ${headers}=    Create Dictionary    Content-Type=application/json    Authorization=Token ${TOKEN}
