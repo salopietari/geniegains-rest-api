@@ -10,7 +10,7 @@ python version 3.11.8: https://www.python.org/downloads/
 > Installation commands are for Windows operating system.
 1. Setup pgAdmin4 and create an empty database.
 2. Clone repository to your own PC.
-3. Create a .env file to the project root and fill out the variable values based on your pgAdmin4 data (See images 1 & 2)<br>
+3. Create a .env file to the project root and fill out the variable values<br>
 Image 1. Create .env file here in the root of the project<br>
 ![image](https://github.com/salopietari/gymjunkie-rest-api/assets/122457202/7b66efc3-26d7-4df8-9fd8-e44ebc9a785e) <br>
 Image 2. Here are the contents of the .env file, be sure to use your own values<br>
