@@ -696,7 +696,8 @@ class user(APIView):
     def get(self, request):
         try:
             user = CustomUser.objects.get(email=self.request.user)
-            return JsonResponse({"username": user.username, "email": user.email, "unit": user.unit, "experience": user.experience}, status=200)
+            reset_query_quota(user)
+            return JsonResponse({"username": user.username, "email": user.email, "unit": user.unit, "experience": user.experience, "query_quota": user.query_quota}, status=200)
 
         except Exception as e:
             logger.error(str(e))
