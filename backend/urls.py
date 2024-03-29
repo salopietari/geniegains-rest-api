@@ -2,6 +2,7 @@ from django.urls import path
 from django.contrib import admin
 from knox.views import LogoutView, LogoutAllView
 from . import views
+from . import conversation_views
 
 urlpatterns = [
     path("admin", admin.site.urls),
@@ -28,5 +29,6 @@ urlpatterns = [
     path("exercisemovementconnection", views.exercisemovementconnection.as_view(), name="exercisemovementconnection"),
     path("exercisemovementconnection/<int:id>", views.exercisemovementconnection_id.as_view(), name="exercisemovementconnection_id"),
     path("feedback", views.feedback.as_view(), name="feedback"),
-    path("question", views.question.as_view(), name="question"),
+    path("conversation/<int:id>", conversation_views.conversation_id.as_view(), name="conversation_id"),
+    path("conversation", conversation_views.conversation.as_view(), name="conversation"),
 ]

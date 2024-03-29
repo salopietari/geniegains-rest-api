@@ -28,11 +28,6 @@ from backend.services import *
 
 load_dotenv()
 
-client = OpenAI(
-    api_key=os.environ.get("OPENAI_API_KEY"),
-    organization=os.environ.get("OPENAI_ORGANIZATION_ID")
-)
-
 user_manager = CustomUserManager()
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -777,36 +772,6 @@ class feedback(APIView):
             )
             return JsonResponse({}, status=200)
         
-        except Exception as e:
-            logger.error(str(e))
-            return JsonResponse({}, status=404)
-        
-@method_decorator(csrf_exempt, name='dispatch')
-class question(APIView):
-    permission_classes = (permissions.IsAuthenticated,)
-
-    def post(self, request, format=None):
-        try:
-            user = CustomUser.objects.get(email=self.request.user)
-            check_user_query_quota(user)
-            data = json.loads(request.body)
-            question = data.get("question")
-            response = client.chat.completions.create(
-                model="gpt-3.5-turbo-0125",
-                messages=[
-                    {"role": "system", "content": "You are a helpful gym personl trainer, your job is to answer any questions the user might have."},
-                    {"role": "user", "content": f"{question}"},
-                ]
-            )
-            answer = response.choices[0].message.content
-            decrement_query_quota(user)
-            return JsonResponse({"answer": answer, 
-                                 "query_quota": user.query_quota}, status=200)
-        
-        except QueryQuotaExceededError as e:
-            logger.error(str(e))
-            return JsonResponse({"error": str(e)}, status=404)
-
         except Exception as e:
             logger.error(str(e))
             return JsonResponse({}, status=404)

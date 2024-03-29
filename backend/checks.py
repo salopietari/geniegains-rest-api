@@ -72,7 +72,8 @@ def check_user_permission(user: CustomUser, model_class: models.Model, object_id
 def check_user_query_quota(user: CustomUser) -> None:
     from backend.services import reset_query_quota
     '''
-    Check if user has queries left for today
+    Check if user has queries left for today.
+    If no queries left, raise QueryQuotaExceededError
     '''
     try:
         reset_query_quota(user)
