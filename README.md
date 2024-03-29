@@ -1,6 +1,6 @@
 # GenieGains-rest-api
 Backend for the mobile gym app GenieGains <br>
-See frontend: [GymJunkie](https://github.com/eemelimu/GymJunkie)
+See frontend: [GenieGains]https://github.com/eemelimu/GenieGains
 ## Installation
 ### Software Requirements
 pgAdmin4 version 7.6: https://www.pgadmin.org/download/ <br>
