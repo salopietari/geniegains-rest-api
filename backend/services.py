@@ -1,5 +1,4 @@
 import os
-import tiktoken
 from backend.models import *
 from backend.checks import check_user_permission, check_user_query_quota
 from django.db.models import Q
