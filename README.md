@@ -1,5 +1,5 @@
-# GymJunkie-rest-api
-Backend for the mobile app GymJunkie <br>
+# GenieGains-rest-api
+Backend for the mobile gym app GenieGains <br>
 See frontend: [GymJunkie](https://github.com/eemelimu/GymJunkie)
 ## Installation
 ### Software Requirements
