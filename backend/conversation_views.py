@@ -43,8 +43,9 @@ class conversation(APIView):
             user = CustomUser.objects.get(email=self.request.user)
             data = json.loads(request.body)
             question = data.get("question")
-            conversation = create_object(user, Conversation, data={"title": "Testi Otsikko"})
+            conversation = create_object(user, Conversation, data={"title": "Default title"})
             qa = ask_openai(user, question, conversation)
+            create_title(qa, conversation)
             return JsonResponse({"conversation_id": conversation.id,
                                 "answer": qa.answer, 
                                 "query_quota": user.query_quota}, status=200)

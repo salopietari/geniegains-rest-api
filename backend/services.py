@@ -1,3 +1,4 @@
+import re
 import os
 from backend.models import *
 from backend.checks import check_user_permission, check_user_query_quota
@@ -150,5 +151,35 @@ def ask_openai(user: CustomUser, question: str, conversation: Conversation) -> Q
         conversation.save()
         return qa
     
+    except Exception as e:
+        raise Exception(e)
+    
+def create_title(qa: QA, conversation: Conversation):
+    '''
+    Use AI to create an appropriate title for a new conversation
+    '''
+    try:
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo-0125",
+            messages=[
+                {"role": "system", "content": "You need to create a title for a conversation based on the question and answer, the title should be short and descriptive. Answer with only the title."},
+                {"role": "user", "content": f"Question: {qa.question}\n Answer: {qa.answer}"},
+            ]
+        )
+        title = strip_string(response.choices[0].message.content)
+        conversation.title = title
+        conversation.save()
+
+    except Exception as e:
+        raise Exception(e)
+    
+def strip_string(input_string: str) -> str:
+    '''
+    Strip input_string of all non-alphanumeric characters
+    '''
+    try:
+        pattern = re.compile(r'[^a-zA-Z0-9\s]')
+        stripped_string = re.sub(pattern, '', input_string)
+        return stripped_string
     except Exception as e:
         raise Exception(e)
