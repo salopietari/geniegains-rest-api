@@ -1,5 +1,6 @@
 import re
 import os
+from backend.exceptions import QueryQuotaExceededError
 from backend.models import *
 from backend.checks import check_user_permission, check_user_query_quota
 from django.db.models import Q
@@ -151,6 +152,9 @@ def ask_openai(user: CustomUser, question: str, conversation: Conversation) -> Q
         conversation.save()
         return qa
     
+    except QueryQuotaExceededError as e:
+        raise QueryQuotaExceededError(e)
+    
     except Exception as e:
         raise Exception(e)
     
@@ -181,5 +185,6 @@ def strip_string(input_string: str) -> str:
         pattern = re.compile(r'[^a-zA-Z0-9\s]')
         stripped_string = re.sub(pattern, '', input_string)
         return stripped_string
+    
     except Exception as e:
         raise Exception(e)

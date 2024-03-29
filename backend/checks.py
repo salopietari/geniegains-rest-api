@@ -78,7 +78,7 @@ def check_user_query_quota(user: CustomUser) -> None:
     try:
         reset_query_quota(user)
         if user.query_quota < 1:
-            raise QueryQuotaExceededError("Daily query quota exceeded")
+            raise QueryQuotaExceededError("Query quota exceeded")
         
     except QueryQuotaExceededError as e:
         raise QueryQuotaExceededError(e)

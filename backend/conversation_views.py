@@ -1,9 +1,6 @@
 import json
-import os
-#import tiktoken
 from dotenv import load_dotenv
 from django.http import JsonResponse
-from django.utils import timezone
 from django.utils.decorators import method_decorator
 from .models import *
 from .loghandler import *
@@ -13,14 +10,8 @@ from .services import *
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import permissions
-from openai import OpenAI
-
 
 load_dotenv()
-
-client = OpenAI(
-    api_key=os.environ.get("OPENAI_API_KEY"),
-)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class conversation(APIView):
@@ -49,6 +40,10 @@ class conversation(APIView):
             return JsonResponse({"conversation_id": conversation.id,
                                 "answer": qa.answer, 
                                 "query_quota": user.query_quota}, status=200)
+        
+        except QueryQuotaExceededError as e:
+            logger.error(str(e))
+            return JsonResponse({"error": str(e)}, status=402)
 
         except Exception as e:
             logger.error(str(e))
@@ -83,6 +78,10 @@ class conversation_id(APIView):
                 "id": qa.id,
                 "answer": qa.answer,
             }, content_type="application/json", status=200)
+        
+        except QueryQuotaExceededError as e:
+            logger.error(str(e))
+            return JsonResponse({"error": str(e)}, status=402)
         
         except Exception as e:
             logger.error(str(e))
