@@ -623,7 +623,7 @@ class exercisemovementconnection_id(APIView):
             user = CustomUser.objects.get(email=self.request.user)
             check_user_permission(user, Exercise, id)
             emcs_list = get_model_data(user, ExerciseMovementConnection, Exercise, additional_filter={"exercise": id})
-            return JsonResponse({"emcs_list": str(emcs_list)}, status=200)
+            return JsonResponse({"emcs_list": emcs_list}, status=200)
             
         except Exception as e:
             logger.error(str(e))
