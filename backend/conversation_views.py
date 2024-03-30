@@ -59,7 +59,8 @@ class conversation_id(APIView):
             check_user_permission(user, Conversation, id)
             conversation = Conversation.objects.get(id=id)
             question_data = get_model_data(user, QA, additional_model=Conversation, additional_filter={"conversation_id": conversation})
-            return JsonResponse({"conversations": question_data}, content_type="application/json", status=200)
+            return JsonResponse({"conversations": question_data}, 
+                                content_type="application/json", status=200)
         
         except Exception as e:
             logger.error(str(e))
@@ -70,13 +71,15 @@ class conversation_id(APIView):
         try:
             user = CustomUser.objects.get(email=self.request.user)
             check_user_permission(user, Conversation, id)
+            check_user_query_quota(user)
             conversation = Conversation.objects.get(id=id)
-            json_data = json.load(request)
-            question = json_data.get('question')
+            data = json.load(request)
+            question = data.get('question')
             qa = ask_openai(user, question, conversation)
             return JsonResponse({
                 "id": qa.id,
                 "answer": qa.answer,
+                "query_quota": user.query_quota
             }, content_type="application/json", status=200)
         
         except QueryQuotaExceededError as e:
@@ -92,10 +95,10 @@ class conversation_id(APIView):
         try:
             user = CustomUser.objects.get(email=self.request.user)
             check_user_permission(user, Conversation, id)
-            json_data = json.load(request)
+            data = json.load(request)
 
-            if "title" in json_data:
-                update_object(user, Conversation, id, {"title": json_data.get("title")})
+            if "title" in data:
+                update_object(user, Conversation, id, {"title": data.get("title")})
             
             return Response(status=204)
         
