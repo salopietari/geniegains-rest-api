@@ -1,7 +1,4 @@
-from django.contrib.auth import authenticate
 from django.views.decorators.csrf import csrf_exempt
-from django.core.exceptions import ValidationError, ObjectDoesNotExist
-from django.contrib.auth.hashers import check_password
 from backend.models import *
 from backend.exceptions import *
 from backend.loghandler import *

@@ -1,15 +1,11 @@
 import json
 import time
 import os
-import openai
-from openai import OpenAI
 from dotenv import load_dotenv
 from datetime import timedelta
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import *
-from django.contrib.auth import login
 from django.contrib.auth.password_validation import validate_password
-from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.db.models import Q
@@ -18,7 +14,6 @@ from django.utils.decorators import method_decorator
 from knox.models import AuthToken
 from rest_framework import permissions
 from rest_framework.views import APIView
-from rest_framework import generics
 from backend.models import *
 from backend.checks import *
 from backend.exceptions import *
