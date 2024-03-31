@@ -67,6 +67,7 @@ def update_object(user: CustomUser, model: models.Model, object_id: int, data: d
     '''
     try:
         obj = model.objects.get(id=object_id)
+        check_user_permission(user, model, object_id)
         for key, value in data.items():
             setattr(obj, key, value)
         obj.full_clean()

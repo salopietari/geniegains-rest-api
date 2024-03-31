@@ -73,7 +73,6 @@ class conversation_id(APIView):
         try:
             user = CustomUser.objects.get(email=self.request.user)
             check_user_permission(user, Conversation, id)
-            check_user_query_quota(user)
             conversation = Conversation.objects.get(id=id)
             data = json.load(request)
             question = data.get('question')
@@ -96,7 +95,6 @@ class conversation_id(APIView):
     def patch(self, request, id):
         try:
             user = CustomUser.objects.get(email=self.request.user)
-            check_user_permission(user, Conversation, id)
             data = json.load(request)
 
             if "title" in data:
@@ -115,7 +113,6 @@ class conversation_id(APIView):
     def delete(self, request, id):
         try:
             user = CustomUser.objects.get(email=self.request.user)
-            check_user_permission(user, Conversation, id)
             delete_object(user, Conversation, id)
             return Response(status=204)
         

@@ -10,6 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.db.models import Q
 from django.core.mail import send_mail
+from django.core.exceptions import ValidationError
 from django.utils.decorators import method_decorator
 from knox.models import AuthToken
 from rest_framework import permissions
@@ -68,6 +69,10 @@ class register(APIView):
             return JsonResponse({"error": str(e)}, status=404)
         
         except ValueError as e:
+            logger.error(str(e))
+            return JsonResponse({"error": str(e)}, status=404)
+        
+        except ValidationError as e:
             logger.error(str(e))
             return JsonResponse({"error": str(e)}, status=404)
 
