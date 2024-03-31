@@ -159,6 +159,7 @@ class Conversation(models.Model):
     created = models.DateField(default=timezone.now, editable=False)
     updated = models.DateField(default=timezone.now, editable=True)
     title = models.CharField(max_length=100, blank=False, null=False)
+    favorite = models.BooleanField(default=False)
 
 class QA(models.Model):
     id = models.AutoField(primary_key=True, editable=False)

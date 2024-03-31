@@ -14,9 +14,9 @@ client = OpenAI(
 
 def get_model_data(user: CustomUser, model: models.Model, additional_model: models.Model=None, additional_filter: dict=None) -> list:
     '''
-    Retrieve all objects of type model belonging to the user and 
-    filtered by additional_model and/or additional_filter (optional).
-    Returns a list of dictionaries where each key represents an object of model, 
+    Retrieve all objects of type "model" belonging to the "user" and 
+    filtered by "additional_model" and/or "additional_filter" (optional).
+    Returns a list of dictionaries where each key represents an object of "model", 
     with the values of the key being the values of the object
     '''
     try:

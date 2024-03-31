@@ -22,6 +22,8 @@ class conversation(APIView):
         try:
             user = CustomUser.objects.get(email=self.request.user)
             conversations = get_model_data(user, Conversation)
+            conversations.sort(key=lambda x: (not x.get('favorite', False), x.get('updated_at')), reverse=True)
+            conversations = conversations[::-1]
             return JsonResponse({"query_quota": user.query_quota, "conversations": conversations}, status=200)
         
         except Exception as e:
@@ -99,6 +101,9 @@ class conversation_id(APIView):
 
             if "title" in data:
                 update_object(user, Conversation, id, {"title": data.get("title")})
+
+            if "favorite" in data:
+                update_object(user, Conversation, id, {"favorite": data.get("favorite")})
             
             return Response(status=204)
         
