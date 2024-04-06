@@ -1,7 +1,8 @@
 import re
 import os
+from django.utils import timezone
 from backend.exceptions import QueryQuotaExceededError
-from backend.models import *
+from backend.models import CustomUser, models, QA, Conversation
 from backend.checks import check_user_permission, check_user_query_quota
 from django.db.models import Q
 from django.db import transaction

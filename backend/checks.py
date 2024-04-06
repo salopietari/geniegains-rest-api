@@ -1,7 +1,6 @@
 from django.views.decorators.csrf import csrf_exempt
-from backend.models import *
-from backend.exceptions import *
-from backend.loghandler import *
+from backend.models import CustomUser, models
+from backend.exceptions import UsernameAlreadyExistsError, EmailAlreadyExistsError, QueryQuotaExceededError
     
 @csrf_exempt
 def check_username(username: CustomUser.username) -> None:

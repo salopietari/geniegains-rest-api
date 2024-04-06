@@ -3,8 +3,9 @@ import time
 import os
 from dotenv import load_dotenv
 from datetime import timedelta
+from django.utils import timezone
 from django.contrib.auth.hashers import make_password
-from django.contrib.auth.hashers import *
+from django.contrib.auth.hashers import check_password
 from django.contrib.auth.password_validation import validate_password
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
@@ -15,12 +16,11 @@ from django.utils.decorators import method_decorator
 from knox.models import AuthToken
 from rest_framework import permissions
 from rest_framework.views import APIView
-from backend.models import *
-from backend.checks import *
-from backend.exceptions import *
-from backend.loghandler import *
-from backend.serializers import *
-from backend.services import *
+from backend.models import CustomUser, CustomUserManager, Tracking, Addition, Exercise, Goal, Movement, TrainingPlan, ExerciseMovementConnection
+from backend.checks import check_user_permission, check_username, check_email
+from backend.exceptions import PasswordTooShortError, PasswordsDoNotMatchError, UsernameAlreadyExistsError, EmailAlreadyExistsError
+from backend.loghandler import logger
+from backend.services import get_model_data, create_object, delete_object, convert_unix_time_to_normal, reset_query_quota
 
 load_dotenv()
 
