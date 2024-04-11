@@ -103,8 +103,8 @@ def translate_object(object: Union[Movement, Conversation, QA], data: dict[str:s
                     translation = translate_text(value, language)
                 else:
                     translation = value  # use the original value if no translation is needed
-            # set the translated value to the object's corresponding field
-            setattr(object, f'{field}_{language}', translation)
+                # set the translated value to the object's corresponding field
+                setattr(object, f'{field}_{language}', translation)
         object.save()
 
     except Exception as e:
