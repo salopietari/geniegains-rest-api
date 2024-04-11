@@ -85,7 +85,14 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'knox',
+    'modeltranslation',
 ]
+
+LANGUAGES = (
+    ('en', 'English'),
+    ('ja', 'Japanese'),
+    ('fi', 'Finnish'),
+)
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': ('knox.auth.TokenAuthentication',),

@@ -6,7 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from .models import CustomUser, Conversation, QA
 from .loghandler import logger
 from .exceptions import QueryQuotaExceededError
-from .services import get_model_data, ask_openai, create_object, create_title, update_object, delete_object, check_user_permission
+from .services import get_model_data, ask_openai, create_object, create_title, update_object, delete_object, check_user_permission, translate_object
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import permissions
@@ -39,6 +39,8 @@ class conversation(APIView):
             conversation = create_object(user, Conversation, data={"title": "Default title"})
             qa = ask_openai(user, question, conversation)
             create_title(qa, conversation)
+            translate_object(conversation, data={"title": conversation.title})
+            translate_object(qa, data={"question": qa.question, "answer": qa.answer})
             return JsonResponse({"conversation_id": conversation.id,
                                 "answer": qa.answer, 
                                 "query_quota": user.query_quota}, status=200)

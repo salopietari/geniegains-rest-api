@@ -20,7 +20,7 @@ from backend.models import CustomUser, CustomUserManager, Tracking, Addition, Ex
 from backend.checks import check_user_permission, check_username, check_email
 from backend.exceptions import PasswordTooShortError, PasswordsDoNotMatchError, UsernameAlreadyExistsError, EmailAlreadyExistsError
 from backend.loghandler import logger
-from backend.services import get_model_data, create_object, delete_object, convert_unix_time_to_normal, reset_query_quota
+from backend.services import get_model_data, create_object, delete_object, convert_unix_time_to_normal, reset_query_quota, translate_object
 
 load_dotenv()
 
@@ -420,6 +420,7 @@ class movement(APIView):
             user = CustomUser.objects.get(email=self.request.user)
             data = json.loads(request.body)
             movement = create_object(user, Movement, data)
+            translate_object(movement, data)
             return JsonResponse({"id": movement.id}, status=200) # movement created successfully
         
         except Exception as e:

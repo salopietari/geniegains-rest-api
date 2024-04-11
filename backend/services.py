@@ -1,13 +1,16 @@
 import re
 import os
+import copy
 from django.utils import timezone
+from backend.google_translate_api import detect_language, translate_text
 from backend.exceptions import QueryQuotaExceededError
-from backend.models import CustomUser, models, QA, Conversation
+from backend.models import CustomUser, models, QA, Conversation, Movement
 from backend.checks import check_user_permission, check_user_query_quota
 from django.db.models import Q
 from django.db import transaction
 from datetime import datetime
 from openai import OpenAI
+from typing import Union
 
 client = OpenAI(
     api_key=os.environ.get("OPENAI_API_KEY"),
@@ -67,24 +70,54 @@ def update_object(user: CustomUser, model: models.Model, object_id: int, data: d
     Update the object of type model with id object_id with the data provided
     '''
     try:
-        obj = model.objects.get(id=object_id)
+        object = model.objects.get(id=object_id)
         check_user_permission(user, model, object_id)
         for key, value in data.items():
-            setattr(obj, key, value)
-        obj.full_clean()
-        obj.save()
+            setattr(object, key, value)
+        object.full_clean()
+        object.save()
     
     except Exception as e:
         raise Exception(e)
+        
+def translate_object(object: Union[Movement, Conversation, QA], data: dict[str:str]) -> None:
+    '''
+    Translate object's (which should be of model Movement, Conversation or QA)
+    fields which are provided in data (where Key = Model's field, Value = value provided by user)
+    to languages (English, Japanese, Finnish) using Google Cloud Translation API.
+
+    These are the fields that should be translated:
+    Movement: name, category
+    Conversation: title
+    QA: question, answer
+    '''
+    try:
+        # iterate over provided data
+        for field, value in data.items():
+            # get the language of the original value
+            detected_language = detect_language(value)
+            # iterate over languages value needs to be translated to
+            for language in ['en', 'ja', 'fi']:
+                # check if the language (e.g. 'en') is the same as the detected language (e.g. 'de')
+                if language != detected_language:
+                    translation = translate_text(value, language)
+                else:
+                    translation = value  # Use the original value if no translation is needed
+            # Set the translated value to the object's corresponding field
+            setattr(object, f'{field}_{language}', translation)
+        object.save()
+
+    except Exception as e:
+        raise e
 
 def delete_object(user: CustomUser, model: models.Model, object_id: int) -> None:
     '''
     Delete the object of type model with id object_id if the user has permission to do so
     '''
     try:
-        obj = model.objects.get(id=object_id)
+        object = model.objects.get(id=object_id)
         check_user_permission(user, model, object_id)
-        obj.delete()
+        object.delete()
     
     except Exception as e:
         raise Exception(e)

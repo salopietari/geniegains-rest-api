@@ -3,6 +3,8 @@ from django.db import models
 from django.utils import timezone
 from django.core.validators import RegexValidator, MaxValueValidator
 from django.contrib.auth.models import AbstractBaseUser, UserManager,BaseUserManager, PermissionsMixin, Group, Permission
+from modeltranslation.translator import TranslationOptions, register
+from modeltranslation.fields import TranslationField
 
 class AlphanumericUsernameValidator(RegexValidator):
     regex = r'^[a-zA-Z0-9]+$'
