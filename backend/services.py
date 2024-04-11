@@ -83,7 +83,7 @@ def update_object(user: CustomUser, model: models.Model, object_id: int, data: d
 def translate_object(object: Union[Movement, Conversation, QA], data: dict[str:str]) -> None:
     '''
     Translate object's (which should be of model Movement, Conversation or QA)
-    fields which are provided in data (where Key = Model's field, Value = value provided by user)
+    fields which are provided in data (where Key = Model's field, Value = Value provided by user)
     to languages (English, Japanese, Finnish) using Google Cloud Translation API.
 
     These are the fields that should be translated:
@@ -102,8 +102,8 @@ def translate_object(object: Union[Movement, Conversation, QA], data: dict[str:s
                 if language != detected_language:
                     translation = translate_text(value, language)
                 else:
-                    translation = value  # Use the original value if no translation is needed
-            # Set the translated value to the object's corresponding field
+                    translation = value  # use the original value if no translation is needed
+            # set the translated value to the object's corresponding field
             setattr(object, f'{field}_{language}', translation)
         object.save()
 
