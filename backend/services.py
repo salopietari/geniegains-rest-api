@@ -142,7 +142,7 @@ def ask_openai(user: CustomUser, question: str, conversation: Conversation) -> Q
         response = client.chat.completions.create(
             model="gpt-3.5-turbo-0125",
             messages=[
-                {"role": "system", "content": "You are a helpful gym personl trainer, your job is to answer any questions the user might have."},
+                {"role": "system", "content": "You are a helpful gym personl trainer, your job is to answer any questions the user might have. ALWAYS RESPOND IN THE SAME LANGUAGE AS THE QUESTION."},
                 {"role": "user", "content": f"{question}"},
             ]
         )
