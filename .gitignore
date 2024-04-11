@@ -16,6 +16,3 @@ output.xml
 report.html
 variables.txt
 interactive_console_output.xml
-
-# google cloud translation API service account details
-geniegains-a8f411f6a73e.json
