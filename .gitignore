@@ -18,4 +18,4 @@ variables.txt
 interactive_console_output.xml
 
 # google cloud translation API service account details
-geniegains.json
+geniegains_google_cloud_translation_service_account_details.json
