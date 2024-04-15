@@ -79,6 +79,7 @@ class conversation_id(APIView):
             data = json.load(request)
             question = data.get('question')
             qa = ask_openai(user, question, conversation)
+            translate_object(qa, data={"question": qa.question, "answer": qa.answer})
             return JsonResponse({
                 "id": qa.id,
                 "answer": qa.answer,

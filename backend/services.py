@@ -98,13 +98,21 @@ def translate_object(object: Union[Movement, Conversation, QA], data: dict[str:s
             detected_language = detect_language(value)
             # iterate over languages value needs to be translated to
             for language in ['en', 'ja', 'fi']:
-                # check if the language (e.g. 'en') is the same as the detected language (e.g. 'de')
+                # if language (e.g. 'en') is not the same as the detected language (e.g. 'fi')
+                # translate the value to the language (e.g. 'en')
                 if language != detected_language:
                     translation = translate_text(value, language)
+                    setattr(object, field + "_" + language, translation)
+                # if language is the same as the detected language
+                # just set the value to the object
                 else:
-                    translation = value  # use the original value if no translation is needed
-                # set the translated value to the object's corresponding field
-                setattr(object, f'{field}_{language}', translation)
+                    setattr(object, field + "_" + language, value)
+            # this is a very cheap fix to make sure that conversation endpoints
+            # save question and answer in a QA object in the original value
+            # FIXME: this is a very bad way to do this
+            if type(object) == QA:
+                object.question = data['question']
+                object.answer = data['answer']
         object.save()
 
     except Exception as e:
