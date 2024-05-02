@@ -27,8 +27,7 @@ def get_model_data(user: CustomUser, model: models.Model, additional_model: mode
     - 'additional_model' (optional): An additional model class for further filtering.
     - 'additional_filter' (optional): Additional filters to apply to the query.
 
-    Returns:
-    A list of dictionaries where each key represents an object of 'model', 
+    Returns: A list of dictionaries where each key represents an object of 'model', 
     with the values of the key being the values of the object.
     """
     try:
@@ -64,8 +63,7 @@ def create_object(user: CustomUser, model: models.Model, data: dict[str: any]) -
     - 'model': The model class of the object to create.
     - 'data': A dictionary containing the data for creating the object.
 
-    Returns:
-    The newly created object of type 'model'.
+    Returns: The newly created object of type 'model'.
     """
     try:
         object = model(**data)
@@ -230,8 +228,7 @@ def ask_openai(user: CustomUser, question: str, conversation: Conversation) -> Q
     - 'question': The question to ask OpenAI.
     - 'conversation': The conversation associated with the question.
 
-    Returns:
-    The QA object containing the question and OpenAI's response.
+    Returns: The QA object containing the question and OpenAI's response.
     """
     try:
         check_user_query_quota(user)
