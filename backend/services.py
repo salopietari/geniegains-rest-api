@@ -17,12 +17,20 @@ client = OpenAI(
 )
 
 def get_model_data(user: CustomUser, model: models.Model, additional_model: models.Model=None, additional_filter: dict=None) -> list:
-    '''
-    Retrieve all objects of type "model" belonging to the "user" and 
-    filtered by "additional_model" and/or "additional_filter" (optional).
-    Returns a list of dictionaries where each key represents an object of "model", 
-    with the values of the key being the values of the object
-    '''
+    """
+    Retrieve all objects of type 'model' belonging to the 'user' and 
+    filtered by 'additional_model' and/or 'additional_filter' (optional).
+    
+    Parameters:
+    - 'user': The user whose objects are being retrieved.
+    - 'model': The model class of the objects to retrieve.
+    - 'additional_model' (optional): An additional model class for further filtering.
+    - 'additional_filter' (optional): Additional filters to apply to the query.
+
+    Returns:
+    A list of dictionaries where each key represents an object of 'model', 
+    with the values of the key being the values of the object.
+    """
     try:
         # filter objects by additional_model and additional_filter
         if additional_model is not None and additional_filter is not None:
@@ -48,9 +56,17 @@ def get_model_data(user: CustomUser, model: models.Model, additional_model: mode
         raise Exception(e)
     
 def create_object(user: CustomUser, model: models.Model, data: dict[str: any]) -> models.Model:
-    '''
-    Create an object of type model with the data provided
-    '''
+    """
+    Create an object of type 'model' with the provided data.
+
+    Parameters:
+    - 'user': The user who owns the object.
+    - 'model': The model class of the object to create.
+    - 'data': A dictionary containing the data for creating the object.
+
+    Returns:
+    The newly created object of type 'model'.
+    """
     try:
         object = model(**data)
         object.user = user
@@ -66,9 +82,17 @@ def create_object(user: CustomUser, model: models.Model, data: dict[str: any]) -
         raise Exception(e)
     
 def update_object(user: CustomUser, model: models.Model, object_id: int, data: dict[str: any]) -> None:
-    '''
-    Update the object of type model with id object_id with the data provided
-    '''
+    """
+    Update the object of type 'model' with the provided data.
+
+    Parameters:
+    - 'user': The user performing the update.
+    - 'model': The model class of the object to update.
+    - 'object_id': The ID of the object to update.
+    - 'data': A dictionary containing the updated data for the object.
+
+    Returns: None
+    """
     try:
         object = model.objects.get(id=object_id)
         check_user_permission(user, model, object_id)
@@ -81,16 +105,22 @@ def update_object(user: CustomUser, model: models.Model, object_id: int, data: d
         raise Exception(e)
         
 def translate_object(object: Union[Movement, Conversation, QA], data: dict[str:str]) -> None:
-    '''
-    Translate object's (which should be of model Movement, Conversation or QA)
-    fields which are provided in data (where Key = Model's field, Value = Value provided by user)
-    to languages (English, Japanese, Finnish) using Google Cloud Translation API.
+    """
+    Translate the fields of the provided object (which should be of type Movement, Conversation, or QA)
+    using the data provided where Key = Model's field, Value = Value provided by the user.
+    Translation is done to languages (English, Japanese, Finnish) using Google Cloud Translation API.
 
     These are the fields that should be translated:
-    Movement: name, category
-    Conversation: title
-    QA: question, answer
-    '''
+    - Movement: name, category
+    - Conversation: title
+    - QA: question, answer
+
+    Parameters:
+    - 'object': The object to translate.
+    - 'data': A dictionary containing the data to translate.
+
+    Returns: None
+    """
     try:
         # iterate over provided data
         for field, value in data.items():
@@ -119,9 +149,16 @@ def translate_object(object: Union[Movement, Conversation, QA], data: dict[str:s
         raise e
 
 def delete_object(user: CustomUser, model: models.Model, object_id: int) -> None:
-    '''
-    Delete the object of type model with id object_id if the user has permission to do so
-    '''
+    """
+    Delete the object of type 'model' with the provided ID if the user has permission to do so.
+
+    Parameters:
+    - 'user': The user attempting to delete the object.
+    - 'model': The model class of the object to delete.
+    - 'object_id': The ID of the object to delete.
+
+    Returns: None
+    """
     try:
         object = model.objects.get(id=object_id)
         check_user_permission(user, model, object_id)
@@ -131,11 +168,16 @@ def delete_object(user: CustomUser, model: models.Model, object_id: int) -> None
         raise Exception(e)
     
 def convert_unix_time_to_normal(seconds: int) -> str:
-    '''
-    Convert a unix timestamp (seconds that have elapsed since the Unix epoch, 
+    """
+    Convert a Unix timestamp (seconds that have elapsed since the Unix epoch, 
     which is defined as 00:00:00 UTC on January 1, 1970, not counting leap seconds) 
-    to a normal date string
-    '''
+    to a normal date string.
+
+    Parameters:
+    - 'seconds': The Unix timestamp to convert.
+
+    Returns: A string representing the normal date.
+    """
     try:
         normal_date = seconds/1000
         normal_date = datetime.fromtimestamp(normal_date)
@@ -145,10 +187,15 @@ def convert_unix_time_to_normal(seconds: int) -> str:
         raise Exception(e)
     
 def reset_query_quota(user: CustomUser) -> None:
-    '''
-    Reset user's query quota to the defined default in models.py 
-    if the last query was not made today
-    '''
+    """
+    Reset the user's query quota to the defined default in models.py 
+    if the last query was not made today.
+
+    Parameters:
+    - 'user': The user whose query quota needs to be reset.
+
+    Returns: None
+    """
     try:
         if user.last_query.date() < timezone.now().date():
             user.query_quota = user._meta.get_field('query_quota').default
@@ -158,10 +205,14 @@ def reset_query_quota(user: CustomUser) -> None:
         raise Exception(e)
     
 def decrement_query_quota(user: CustomUser) -> None:
-    '''
-    Decrement user's query quota by 1
-    and update the last query to the current time
-    '''
+    """
+    Decrement the user's query quota by 1 and update the last query time to the current time.
+
+    Parameters:
+    - 'user': The user whose query quota needs to be decremented.
+
+    Returns: None
+    """
     try:
         user.query_quota -= 1
         user.last_query = timezone.now()
@@ -171,9 +222,17 @@ def decrement_query_quota(user: CustomUser) -> None:
         raise Exception(e)
     
 def ask_openai(user: CustomUser, question: str, conversation: Conversation) -> QA:
-    '''
-    Ask OpenAI a question and save the response in a QA object and return it.
-    '''
+    """
+    Ask OpenAI a question, save the response in a QA object, and return it.
+
+    Parameters:
+    - 'user': The user asking the question.
+    - 'question': The question to ask OpenAI.
+    - 'conversation': The conversation associated with the question.
+
+    Returns:
+    The QA object containing the question and OpenAI's response.
+    """
     try:
         check_user_query_quota(user)
         if len(question) > QA._meta.get_field('question').max_length:
@@ -202,9 +261,15 @@ def ask_openai(user: CustomUser, question: str, conversation: Conversation) -> Q
         raise Exception(e)
     
 def create_title(qa: QA, conversation: Conversation):
-    '''
-    Use AI to create an appropriate title for a new conversation
-    '''
+    """
+    Use AI to create an appropriate title for a new conversation.
+
+    Parameters:
+    - 'qa': The QA object containing the question and answer.
+    - 'conversation': The conversation for which the title is being created.
+
+    Returns: None
+    """
     try:
         response = client.chat.completions.create(
             model="gpt-3.5-turbo-0125",
@@ -221,9 +286,14 @@ def create_title(qa: QA, conversation: Conversation):
         raise Exception(e)
     
 def strip_string(input_string: str) -> str:
-    '''
-    Strip input_string of all non-alphanumeric characters
-    '''
+    """
+    Strip input_string of all non-alphanumeric characters.
+
+    Parameters:
+    - 'input_string': The string to be stripped.
+
+    Returns: A string with only alphanumeric characters and whitespaces.
+    """
     try:
         pattern = re.compile(r'[^a-zA-Z0-9\s]')
         stripped_string = re.sub(pattern, '', input_string)
