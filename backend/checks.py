@@ -1,7 +1,31 @@
 from django.views.decorators.csrf import csrf_exempt
 from backend.models import CustomUser, models
-from backend.exceptions import UsernameAlreadyExistsError, EmailAlreadyExistsError, QueryQuotaExceededError
-    
+from backend.exceptions import UsernameAlreadyExistsError, EmailAlreadyExistsError, QueryQuotaExceededError, PasswordsDoNotMatchError
+
+@csrf_exempt
+def check_register(data: dict) -> None:
+    try:
+        username = data.get('username')
+        email = data.get('email')
+        password = data.get('password')
+        confirm_password = data.get('confirmPassword')
+        unit = data.get('unit')
+        experience = data.get('experience')
+
+        # Check if all fields are present
+        if not username or not email or not password or not confirm_password or not unit or not experience:
+            raise Exception("All fields are required")
+        
+        # Check if password and confirm password match
+        if password != confirm_password:
+            raise PasswordsDoNotMatchError("Passwords do not match")
+        
+        # Check if username and email are valid and available
+        check_username(username)
+        check_email(email)
+    except Exception as e:
+        raise Exception(e)
+
 @csrf_exempt
 def check_username(username: CustomUser.username) -> None:
     '''

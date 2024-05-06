@@ -17,7 +17,7 @@ from knox.models import AuthToken
 from rest_framework import permissions
 from rest_framework.views import APIView
 from backend.models import CustomUser, CustomUserManager, Tracking, Addition, Exercise, Goal, Movement, TrainingPlan, ExerciseMovementConnection
-from backend.checks import check_user_permission, check_username, check_email
+from backend.checks import check_user_permission, check_username, check_email, check_register
 from backend.exceptions import PasswordTooShortError, PasswordsDoNotMatchError, UsernameAlreadyExistsError, EmailAlreadyExistsError
 from backend.loghandler import logger
 from backend.services import get_model_data, create_object, delete_object, convert_unix_time_to_normal, reset_query_quota, translate_object
@@ -32,6 +32,7 @@ class register(APIView):
     def post(self, request):
         try:
             data = json.loads(request.body)
+            check_register(data)
 
             # create a CustomUser object (don't save to db)
             user = CustomUser(
