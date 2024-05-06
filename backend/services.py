@@ -237,7 +237,9 @@ def ask_openai(user: CustomUser, question: str, conversation: Conversation) -> Q
         qa = create_object(user, QA, {"question": question, "conversation": conversation})
 
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo-0125",
+            model="gpt-4", 
+            # in presentation: gpt-4
+            # in development: gpt-3.5-turbo-0125
             messages=[
                 {"role": "system", "content": "You are a helpful gym personl trainer, your job is to answer any questions the user might have. ALWAYS RESPOND IN THE SAME LANGUAGE AS THE QUESTION."},
                 {"role": "user", "content": f"{question}"},
