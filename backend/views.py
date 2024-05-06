@@ -579,7 +579,7 @@ class trainingplan_id(APIView):
 @method_decorator(csrf_exempt, name='dispatch')
 class exercisemovementconnection(APIView):
     permission_classes = (permissions.IsAuthenticated,)
-
+ 
     # get all emcs for user
     # ONKS TÄÄ TURHA ENDPOINT? KÄYTETÄÄNKÖ TÄTÄ EDES FRONTENDISSÄ MISSÄÄN ???
     def get(self, request):
