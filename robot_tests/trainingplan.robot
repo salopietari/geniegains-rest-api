@@ -22,10 +22,10 @@ ${TRAININGPLAN_ID}    None
 *** Test Cases ***
 Register User Successfully
     Create Session    Register Session    ${BASE_URL}
-    ${data}=        Create Dictionary    username=${REGISTER_USERNAME}    password=${REGISTER_PASS}    confirmPassword=${REGISTER_PASS}    email=${REGISTER_EMAIL}    unit=${REGISTER_UNIT}    experience=${REGISTER_EXPERIENCE}
+    ${data}=        Create Dictionary    username=${REGISTER_USERNAME}    password=${REGISTER_PASS}    confirm_password=${REGISTER_PASS}    email=${REGISTER_EMAIL}    unit=${REGISTER_UNIT}    experience=${REGISTER_EXPERIENCE}
     ${headers}=     Create Dictionary    Content-Type=application/json
     ${response}=    POST On Session    Register Session    /register    json=${data}    headers=${headers}
-    Should Be Equal As Strings    ${response.status_code}    200
+    Should Be Equal As Strings    ${response.status_code}    201
     ${TOKEN}=    Set Variable    ${response.json()['token']}
     Set Global Variable    ${TOKEN}
     Delete All Sessions

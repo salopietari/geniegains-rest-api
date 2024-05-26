@@ -14,13 +14,15 @@ from django.core.mail import send_mail
 from django.core.exceptions import ValidationError
 from django.utils.decorators import method_decorator
 from knox.models import AuthToken
-from rest_framework import permissions
+from rest_framework import permissions, status
 from rest_framework.views import APIView
+from rest_framework.response import Response
 from backend.models import CustomUser, CustomUserManager, Tracking, Addition, Exercise, Goal, Movement, TrainingPlan, ExerciseMovementConnection
 from backend.checks import check_user_permission, check_username, check_email, check_register
 from backend.exceptions import PasswordTooShortError, PasswordsDoNotMatchError, UsernameAlreadyExistsError, EmailAlreadyExistsError
 from backend.loghandler import logger
 from backend.services import get_model_data, create_object, delete_object, convert_unix_time_to_normal, reset_query_quota, translate_object
+from backend.serializers import RegisterSerializer
 
 load_dotenv()
 
@@ -31,35 +33,14 @@ class register(APIView):
     #register
     def post(self, request):
         try:
-            data = json.loads(request.body)
-            check_register(data)
-
-            # create a CustomUser object (don't save to db)
-            user = CustomUser(
-                email=data.get("email"),
-                password=data.get("password"),
-                username=data.get("username"),
-                unit=data.get("unit"),
-                experience=data.get("experience")
-            )
-
-            # validate password
-            validate_password(user.password, user)
+            serializer = RegisterSerializer(data=request.data)
+        
+            if serializer.is_valid():
+                user = serializer.save()
+                token = AuthToken.objects.create(user)[1]
+                return Response({"token": token}, status=status.HTTP_201_CREATED)
             
-            # validate all fields
-            user.full_clean()
-
-            # actually create the user (automatically saves it to db)
-            user = user_manager.create_user(
-                email=user.email,
-                password=user.password, 
-                username=user.username, 
-                unit=user.unit, 
-                experience=user.experience
-            )
-            
-            token = AuthToken.objects.create(user)[1]
-            return JsonResponse({"token": token}, status=200)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         except PasswordTooShortError as e:
             logger.error(str(e))
