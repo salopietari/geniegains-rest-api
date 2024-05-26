@@ -63,23 +63,23 @@ class register(APIView):
         
         except PasswordTooShortError as e:
             logger.error(str(e))
-            return JsonResponse({"error": str(e)}, status=404)
+            return JsonResponse({"error": str(e)}, status=400)
         
         except PasswordsDoNotMatchError as e:
             logger.error(str(e))
-            return JsonResponse({"error": str(e)}, status=404)
+            return JsonResponse({"error": str(e)}, status=400)
         
         except ValueError as e:
             logger.error(str(e))
-            return JsonResponse({"error": str(e)}, status=404)
+            return JsonResponse({"error": str(e)}, status=400)
         
         except ValidationError as e:
             logger.error(str(e))
-            return JsonResponse({"error": str(e)}, status=404)
+            return JsonResponse({"error": str(e)}, status=400)
 
         except Exception as e:
             logger.error(str(e))
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class login(APIView):
@@ -97,7 +97,7 @@ class login(APIView):
 
         except Exception as e:
             logger.error(str(e))
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
 
 @method_decorator(csrf_exempt, name='dispatch') 
 class token_login(APIView):
@@ -111,7 +111,7 @@ class token_login(APIView):
 
         except Exception as e:
             logger.error(str(e))
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
 
 @method_decorator(csrf_exempt, name='dispatch')  
 class register_username(APIView):
@@ -126,12 +126,12 @@ class register_username(APIView):
         except UsernameAlreadyExistsError as e:
             logger.error(str(e))
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
-            return JsonResponse({"error": str(e)}, status=404)
+            return JsonResponse({"error": str(e)}, status=400)
 
         except Exception as e:
             logger.error(str(e))
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class register_email(APIView):
@@ -146,12 +146,12 @@ class register_email(APIView):
         except EmailAlreadyExistsError as e:
             logger.error(str(e))
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
-            return JsonResponse({"error": str(e)}, status=404)
+            return JsonResponse({"error": str(e)}, status=400)
 
         except Exception as e:
             logger.error(str(e))
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class tracking(APIView):
@@ -166,7 +166,7 @@ class tracking(APIView):
 
         except Exception as e:
             logger.error(str(e))
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
 
     # create tracking
     def post(self, request):
@@ -179,7 +179,7 @@ class tracking(APIView):
         except Exception as e:
             logger.error(str(e))
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
 
 @method_decorator(csrf_exempt, name='dispatch')  
 class tracking_id(APIView):
@@ -195,7 +195,7 @@ class tracking_id(APIView):
 
         except Exception as e:
             logger.error(str(e))
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
         
     # delete tracking by id
     def delete(self, request, id):
@@ -206,7 +206,7 @@ class tracking_id(APIView):
 
         except Exception as e:
             logger.error(str(e))
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
 
 @method_decorator(csrf_exempt, name='dispatch') 
 class addition(APIView):
@@ -223,7 +223,7 @@ class addition(APIView):
         except Exception as e:
             logger.error(str(e))
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
 
 @method_decorator(csrf_exempt, name='dispatch')  
 class exercise(APIView):
@@ -238,7 +238,7 @@ class exercise(APIView):
 
         except Exception as e:
             logger.error(str(e))
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
         
     # create exercise
     def post(self, request):
@@ -251,7 +251,7 @@ class exercise(APIView):
         except Exception as e:
             logger.error(str(e))
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
         
 @method_decorator(csrf_exempt, name='dispatch')
 class exercise_id(APIView):
@@ -273,7 +273,7 @@ class exercise_id(APIView):
 
         except Exception as e:
             logger.error(str(e))
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
 
     # update / edit exercise by id
     def patch(self, request, id):
@@ -298,7 +298,7 @@ class exercise_id(APIView):
 
         except Exception as e:
             logger.error(str(e))
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
         
     # delete exercise by id
     def delete(self, request, id):
@@ -309,7 +309,7 @@ class exercise_id(APIView):
 
         except Exception as e:
             logger.error(str(e))
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class goal(APIView):
@@ -324,7 +324,7 @@ class goal(APIView):
         
         except Exception as e:
             logger.error(str(e))
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
 
     # create goal
     def post(self, request, format=None):
@@ -341,7 +341,7 @@ class goal(APIView):
         except Exception as e:
             logger.error(str(e))
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class goal_id(APIView):
@@ -371,7 +371,7 @@ class goal_id(APIView):
         
         except Exception as e:
             logger.error(str(e))
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
         
     # delete goal by id
     def delete(self, request, id):
@@ -382,7 +382,7 @@ class goal_id(APIView):
 
         except Exception as e:
             logger.error(str(e))
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
         
 @method_decorator(csrf_exempt, name='dispatch')
 class goal_additions_id(APIView):
@@ -398,7 +398,7 @@ class goal_additions_id(APIView):
 
         except Exception as e:
             logger.error(str(e))
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class movement(APIView):
@@ -413,7 +413,7 @@ class movement(APIView):
         
         except Exception as e:
             logger.error(str(e))
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
 
     # create movement
     def post(self, request):
@@ -427,7 +427,7 @@ class movement(APIView):
         except Exception as e:
             logger.error(str(e))
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
         
 @method_decorator(csrf_exempt, name='dispatch')
 class movement_id(APIView):
@@ -441,7 +441,7 @@ class movement_id(APIView):
             return JsonResponse({}, status=204)
         except Exception as e:
             logger.error(str(e))
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class trainingplan(APIView):
@@ -476,7 +476,7 @@ class trainingplan(APIView):
         
         except Exception as e:
             logger.error(str(e))
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
         
     # create training plan
     def post(self, request):
@@ -504,7 +504,7 @@ class trainingplan(APIView):
         except Exception as e:
             logger.error(str(e))
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class trainingplan_id(APIView):
@@ -527,7 +527,7 @@ class trainingplan_id(APIView):
         
         except Exception as e:
             logger.error(str(e))
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
         
     # update / edit training plan by id
     def patch(self, request, id):
@@ -563,7 +563,7 @@ class trainingplan_id(APIView):
         
         except Exception as e:
             logger.error(str(e))
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
 
     # delete training plan
     def delete(self, request, id):
@@ -574,7 +574,7 @@ class trainingplan_id(APIView):
 
         except Exception as e:
             logger.error(str(e))
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class exercisemovementconnection(APIView):
@@ -590,7 +590,7 @@ class exercisemovementconnection(APIView):
 
         except Exception as e:
             logger.error(str(e))
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
         
     # create exercisemovementconnection
     def post(self, request):
@@ -613,7 +613,7 @@ class exercisemovementconnection(APIView):
         except Exception as e:
             logger.error(str(e))
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class exercisemovementconnection_id(APIView):
@@ -630,7 +630,7 @@ class exercisemovementconnection_id(APIView):
         except Exception as e:
             logger.error(str(e))
             logger.debug(f"id: {id if 'id' in locals() else 'Not available'}")
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
         
     # update / edit exercisemovementconnection by exercise id
     def patch(self, request, id):
@@ -671,7 +671,7 @@ class exercisemovementconnection_id(APIView):
             logger.error(str(e))
             logger.debug(f"id: {id if 'id' in locals() else 'Not available'}")
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
         
     # delete emc by id
     def delete(self, request, id):
@@ -682,7 +682,7 @@ class exercisemovementconnection_id(APIView):
 
         except Exception as e:
             logger.error(str(e))
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class user(APIView):
@@ -697,7 +697,7 @@ class user(APIView):
 
         except Exception as e:
             logger.error(str(e))
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
         
     # update user details
     def patch(self, request):
@@ -731,7 +731,7 @@ class user(APIView):
         except Exception as e:
             logger.error(str(e))
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
 
     # delete user
     def delete(self, request):
@@ -747,11 +747,11 @@ class user(APIView):
         except PasswordsDoNotMatchError as e:
             logger.error(str(e))
             logger.debug(f"data: {data if 'data' in locals() else 'Not available'}")
-            return JsonResponse({"error": "Password is incorrect"}, status=404)
+            return JsonResponse({"error": "Password is incorrect"}, status=400)
         
         except Exception as e:
             logger.error(str(e))
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class feedback(APIView):
@@ -776,4 +776,4 @@ class feedback(APIView):
         
         except Exception as e:
             logger.error(str(e))
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)

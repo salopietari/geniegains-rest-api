@@ -28,7 +28,7 @@ class conversation(APIView):
         
         except Exception as e:
             logger.error(str(e))
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
     
     # create a new conversation (includes first message)
     def post(self, request):
@@ -51,7 +51,7 @@ class conversation(APIView):
 
         except Exception as e:
             logger.error(str(e))
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class conversation_id(APIView):
@@ -68,7 +68,7 @@ class conversation_id(APIView):
         
         except Exception as e:
             logger.error(str(e))
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
     
     # insert new chat message (question) to conversation 
     def post(self, request, id):
@@ -92,7 +92,7 @@ class conversation_id(APIView):
         
         except Exception as e:
             logger.error(str(e))
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
         
     # update conversation title and favorite status
     def patch(self, request, id):
@@ -110,7 +110,7 @@ class conversation_id(APIView):
         
         except Exception as e:
             logger.error(str(e))
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
         
     # deletes a conversation
     def delete(self, request, id):
@@ -121,4 +121,4 @@ class conversation_id(APIView):
         
         except Exception as e:
             logger.error(str(e))
-            return JsonResponse({}, status=404)
+            return JsonResponse({}, status=400)
